@@ -1,0 +1,54 @@
+---
+title: "Random Proposal Code"
+output: html_notebook
+---
+
+
+Create random data(Well distributed) to show why we need our variables to
+normalized
+```{r}
+ex_data  = rnorm(n = 100, mean = 0, sd = 1)
+```
+
+```{r}
+hist(ex_data,
+     col="lightblue1",
+     #border="dodgerblue3",
+     main="Randomly Generated Data",
+     xlab="Data Values",
+     freq = FALSE,
+     breaks = 15
+     )
+lines(density(ex_data),
+      col="dodgerblue3",
+      lwd=1)
+
+```
+
+Compare with population data (Maybe even orignal data)
+
+```{r}
+df_og = read.csv("C:\\Users/Laura/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets Modified/2015_done.csv")
+
+df_pop = read.csv("C:\\Users/Laura/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets Modified/Population_done.csv")
+```
+
+```{r}
+head(df_og, 5)
+```
+
+
+```{r}
+head(df_pop,5)
+```
+
+
+```{r}
+hist(df_og$dist_from_syd,
+     col="lightblue1",
+     #border="dodgerblue3",
+     main="Distance From Sydney Histogram",
+     xlab="Data Values",
+     )
+```
+Highly skewered - Right/positively skewered

@@ -1,0 +1,223 @@
+---
+title: "Project Code"
+output: html_notebook
+---
+
+Import libraries
+```{r}
+library(geosphere)
+library("ggplot2")
+library("ggmap")
+```
+
+```{r}
+# Read in the unchanged data
+data = read.csv("C:/Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Russell Data.csv")
+```
+
+
+```{r}
+# Extract the NSW samples
+dataNSW = data[1:4842,]
+
+# Check first and last values to make sure it's correct
+head(dataNSW,4)
+tail(dataNSW, n = 4)
+
+# No. of total samples from NSW (Total SA2 regions) 538
+4842/9
+```
+
+
+Create new comlumn in dataframe for distance from Sydney (Will be in kilometers)
+```{r}
+dataNSW['dist_from_syd'] <- NA
+dataNSW['ABS_Value'] <- NA
+head(dataNSW,4)
+```
+
+
+Drop comlumns that aren't needed right now
+```{r}
+df = subset(dataNSW, select = c(Region,TIME_FY,Time,Value,ABS_Value,dist_from_syd))
+head(df,5)
+```
+
+
+Assign Sydney latitude and longatude values. 
+These will remain constant
+```{r}
+register_google(key = "AIzaSyCqxVoUpMXi4a_277_Omdia34tjThcRP8A")
+
+locs <- c('Sydney, NSW')
+lat_lon = geocode(locs)
+syd_long = as.numeric(lat_lon[1,1])
+syd_lat = as.numeric(lat_lon[1,2])
+```
+Avoca beach latitude and longatude values
+```{r}
+avoca = df[1, 1]
+loc_avoca <- c(avoca)
+avoca_lat_lon = geocode(loc_avoca)
+avoca_lon = as.numeric(avoca_lat_lon[1,1])
+avoca_lat = as.numeric(avoca_lat_lon[1,2])
+```
+**Tester**
+Distance using haversine function between avoca beach and sydney
+```{r}
+test_dist = distm (c(syd_long, syd_lat), c(avoca_lon, avoca_lat), fun = distHaversine)*0.001
+test_dist
+```
+
+
+
+Distance calculator function definition.
+Takes in region. Using geocode function to retrieve latitude and longatude values. 
+Uses Haversine function to calculate the distance from the Sydney values. 
+Returns this value.
+```{r}
+dist_calc <- function(region) {
+  str = ', NSW'
+  region2 = paste(region,str)
+  loc <- c(region2)
+  lat_lon = geocode(loc)
+  lon = as.numeric(lat_lon[1,1])
+  lat = as.numeric(lat_lon[1,2])  
+  distance = distm (c(syd_long, syd_lat), c(lon, lat), fun = distHaversine)*0.001
+  
+  return (distance)
+}
+```
+
+
+For loop to add distance from Sydney into the empty distance columns
+```{r}
+for (x in 1:538) {
+  x = x*9
+  region_x = df[x,1]
+  dist = dist_calc(region_x)
+
+  for (i in 1:9){
+    i = x + 1 - i
+    val = df[i,4]
+    absVal = abs(val)
+    df[i,5] = absVal
+    df[i,6] = dist
+  }
+  
+}
+
+head(df, 36)
+tail(df, 36)
+```
+
+```{r}
+head(df, 5)
+```
+
+```{r}
+write.csv(df,'2015_done.csv')
+```
+
+
+
+
+```{r}
+plot(df$ABS_Value ~ df$dist_from_syd,
+     main="Relationship between Distance from Sydney and Migration Value",
+     xlab="Migration Change (Absolute)",
+     ylab="Distance From Sydney(kms)"
+)
+```
+
+
+```{r}
+model1 = lm(dist_from_syd ~ ABS_Value, data = df)
+sum1 = summary(model1)
+sum1
+```
+```{r}
+plot(dist_from_syd~ABS_Value, data=subset(df, TIME_FY==2012))
+```
+```{r}
+hist(df$dist_from_syd)
+mean(df$dist_from_syd)  
+```
+```{r}
+plot(df$dist_from_syd)
+```
+ 
+
+pop density ~ year*(distance_to_sydney)  
+
+
+Population Data
+
+
+
+```{r}
+# Read in the unchanged data
+pop_data = read.csv("C:/Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/population_mod.csv")
+```
+
+
+Note the change columns are from 2011-2021
+```{r}
+head(pop_data,5)
+```
+```{r}
+pop_data['distance_from_syd'] <- NA
+```
+
+
+
+For loop to add distance from Sydney into the empty distance columns
+```{r}
+for (x in 1:651) {
+  region_x = pop_data[x,3]
+  dist = dist_calc(region_x)
+  pop_data[x,29] = dist
+}
+
+head(pop_data, 10)
+tail(pop_data, 10)
+```
+
+
+
+```{r}
+library(dplyr)
+pop_data = pop_data[-c(644, 645, 646, 647, 648, 649, 650, 651), ] 
+```
+
+
+```{r}
+head(pop_data, 10)
+tail(pop_data, 10)
+```
+
+
+```{r}
+pop_data = select(pop_data, -X)
+head(pop_data,5)
+```
+
+
+
+
+
+```{r}
+write.csv(pop_data,'Population_done.csv')
+```
+
+
+
+
+
+
+
+
+
+
+
+

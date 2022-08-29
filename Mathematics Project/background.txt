@@ -1,0 +1,23 @@
+Background draft
+****************
+
+Our problem focuses on investigating any possible changes to intrastate 
+migration in NSW since the COVID-19 pandemic. 
+
+**
+Information from preliminary literature reviews
+**
+
+The topic is not necessarily original but we hope our approach and 
+use of newer data will add to the conversation. The literature looks at
+interstate migration, understandably, given that boarder restrictions 
+we enforced during the first 1-2 years of the pandemic. 
+
+We would like to look at intrastate migration. Has the pandemic affected 
+this? 
+If so, can we infer why? 
+Specifically we want to see if there are more people leaving Sydney and
+other highly populated cities in NSW (Parramatta, Liverpool)
+
+Our other primary motivation behind this project is to utilize appropiate
+statistical methods with our avaliable data. 

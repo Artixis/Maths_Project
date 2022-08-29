@@ -1,0 +1,69 @@
+---
+title: "Project Code"
+output: html_notebook
+---
+
+```{r}
+# Read in the data
+data = read.csv("C:/Users/Laura/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Russell Data.csv")
+```
+
+
+```{r}
+# Extract the NSW samples
+dataNSW = data[1:4842,]
+
+# Check first and last values to make sure it's correct
+head(dataNSW,4)
+tail(dataNSW, n = 4)
+
+# No. of total samples from NSW (Total SA2 regions)
+4842/9
+```
+```{r}
+install.packages("Rtools")
+```
+
+
+
+```{r}
+install.packages("https://cran.r-project.org/src/contrib/Archive/rlang/rlang_1.0.2.tar.gz", repos = NULL, type="source")
+```
+
+
+```{r}
+
+library("ggplot2")
+library("ggmap")
+
+register_google(key = "AIzaSyCqxVoUpMXi4a_277_Omdia34tjThcRP8A")
+
+locs <- c('Sydney, NSW')
+geocode(locs)
+```
+
+Create function to take in location of specific sample
+
+```{r}
+
+```
+
+
+
+Create a function to determine the distance between to locations, with their latitude and longitude given. 
+
+```{r}
+
+```
+
+
+
+
+
+Useful Websites:
+https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude
+https://cran.r-project.org/web/packages/ggmap/readme/README.html
+https://www.movable-type.co.uk/scripts/latlong.html
+https://swcarpentry.github.io/r-novice-inflammation/02-func-R/
+https://www.geeksforgeeks.org/loops-in-r-for-while-repeat/
+
