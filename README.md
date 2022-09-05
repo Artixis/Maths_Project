@@ -1,9 +1,17 @@
-# Math Capstone
+# Project Notes
+##Impacts of the COVID pandemic on regional internal migration.
 
-This is my capstone for math.
+**Description**
+The project will involve downloading regional internal migration estimates from the ABS in 2021 and 2019
+in regions around Sydney. Regression Models will be fit to looking at associations between migration and
+distance from population centres, income, distance to beaches, etc. The project should incorporate some data
+visualisation.
 
 
+[[Literature]]
 
-$$
-\oint_\gamma \frac{f(z)}{z-a} \mathrm{d}z = f\left(a\right)
-$$
+
+[[Methodology]]
+
+
+[[References]]
