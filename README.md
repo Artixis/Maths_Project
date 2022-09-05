@@ -1,4 +1,4 @@
-# Project Notes
+#Project Notes
 ##Impacts of the COVID pandemic on regional internal migration.
 
 **Description**
@@ -8,10 +8,10 @@ distance from population centres, income, distance to beaches, etc. The project 
 visualisation.
 
 
-[[Literature]]
+[Literature]
 
 
-[[Methodology]]
+[Methodology]
 
 
-[[References]]
+[References]
