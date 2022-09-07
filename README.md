@@ -10,7 +10,7 @@ distance from population centres, income, distance to beaches, etc. The project 
 visualisation.
 
 
-[Literature]
+[Literature](https://github.com/Artixis/Maths_Project/blob/main/literature.md)
 
 
 [Methodology](https://github.com/Artixis/Maths_Project/blob/main/Methodology.md)
