@@ -26,5 +26,8 @@ visualisation.*
 - Analysis on our findings.
 
 [References](https://github.com/Artixis/Maths_Project/blob/main/references.md)
+- Bibliography 
+- Referencing help
 
 [To Do List](https://github.com/Artixis/Maths_Project/blob/main/todo.md)
+- Goals to check off throughout the semester.
