@@ -9,8 +9,11 @@ visualisation.*
 
 > This readme document serves as a centtral hub for our project. Here we can keep track literature used and how to
 > quote it. Additionally the methodology can be update regularly here with the help of markdown tools. 
-> 
 > Each link sends the reader to another markdown file in which they may read or update the information there.
+> 
+> Below is a link to help with basic markdown elements
+> 
+> [Markdown Cheat Sheet](https://www.markdownguide.org/cheat-sheet/) 
 
 
 [Literature](https://github.com/Artixis/Maths_Project/blob/main/literature.md)
