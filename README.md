@@ -16,4 +16,4 @@ visualisation.
 [Methodology](https://github.com/Artixis/Maths_Project/blob/main/Methodology.md)
 
 
-[References]
+[References](https://github.com/Artixis/Maths_Project/blob/main/references.md)
