@@ -13,7 +13,7 @@ visualisation.
 [Literature]
 
 
-[Methodology]
+[Methodology](methodology.md)
 
 
 [References]
