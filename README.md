@@ -7,8 +7,7 @@ visualisation.*
 
 <br/><br/>
 
-> This readme document serves as a centtral hub for our project. Here we can keep track literature used and how to
-> quote it. Additionally the methodology can be update regularly here with the help of markdown tools. 
+> This readme document serves as a central hub for our project. 
 > Each link sends the reader to another markdown file in which they may read or update the information there.
 > 
 > Below is a link to help with basic markdown elements
