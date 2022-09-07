@@ -13,7 +13,7 @@ visualisation.
 [Literature]
 
 
-[Methodology](methodology.md)
+[Methodology](https://github.com/Artixis/Maths_Project/blob/main/Methodology.md)
 
 
 [References]
