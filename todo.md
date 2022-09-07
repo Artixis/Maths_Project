@@ -1,5 +1,6 @@
 ## Goals
 
+[Main Page](https://github.com/Artixis/Maths_Project/blob/main/README.md)
 
  ### Github set up
 - [ ] Organise notes/literature
