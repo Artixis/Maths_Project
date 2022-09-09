@@ -13,4 +13,3 @@ for the 2007 – 2015 and 2019 – 2021 Census data.*
 
 *As a result, he various social and economic implications of these intrastate movements,
 both short-term and long-term, are of this study’s interest.*
-

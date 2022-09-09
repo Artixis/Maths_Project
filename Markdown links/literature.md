@@ -29,5 +29,3 @@ Relocating/Moving between cities and regions is closely related to:
 forming relationships.
 - Further: Family-lifestyle considerations, and relative access to jobs and
 house prices.
-
-

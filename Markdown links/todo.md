@@ -39,6 +39,3 @@
 - [ ] Again, focus on key points (Although we are albe to say more in the report)
 - [ ] Check final PDF after compiling for any mistakes
 
-
-
-

@@ -38,7 +38,3 @@ in Computer and Communication Engineering, 1:299, 04 2013.
 
 ### Examples 
 
-
-
-
-

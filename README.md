@@ -15,26 +15,27 @@ visualisation.*
 > [Markdown Cheat Sheet](https://www.markdownguide.org/cheat-sheet/) 
 > 
 > I've also include a link below to help with sharing R files
+> 
 > [Uploading R in github](https://statsandr.com/blog/how-to-upload-r-code-on-github-example-with-an-r-script-on-mac-os/)
 
 
 
 <br/><br/>
 
-[Literature](https://github.com/Artixis/Maths_Project/blob/main/literature.md)
+[Literature](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/literature.md)
 - Includes notes of useful texts/resources relavent to the project. 
 
-[Hypothesis](https://github.com/Artixis/Maths_Project/blob/main/hypothesis.md)
+[Hypothesis](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/hypothesis.md)
 - Contains our hypothesis for the project. 
 
-[Methodology](https://github.com/Artixis/Maths_Project/blob/main/Methodology.md)
+[Methodology](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/methodology.md)
 - Contains some information about the data we are using. 
 - Information on statistical and mathematical methods used, as well as data processing.
 - Analysis on our findings.
 
-[References](https://github.com/Artixis/Maths_Project/blob/main/references.md)
+[References](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/references.md)
 - Bibliography 
 - Referencing help
 
-[To Do List](https://github.com/Artixis/Maths_Project/blob/main/todo.md)
+[To Do List](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/todo.md)
 - Goals to check off throughout the semester.
