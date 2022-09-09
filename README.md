@@ -36,5 +36,5 @@ visualisation.*
 - Bibliography 
 - Referencing help
 
-[To Do List](https://github.com/Artixis/Maths_Project/blob/main/todo.md)
+[To Do List](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/todo.md)
 - Goals to check off throughout the semester.
