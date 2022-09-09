@@ -13,6 +13,11 @@ visualisation.*
 > Below is a link to help with basic markdown elements
 > 
 > [Markdown Cheat Sheet](https://www.markdownguide.org/cheat-sheet/) 
+> 
+> I've also include a link below to help with sharing R files
+> [Uploading R in github](https://statsandr.com/blog/how-to-upload-r-code-on-github-example-with-an-r-script-on-mac-os/)
+
+
 
 <br/><br/>
 
