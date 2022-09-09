@@ -32,7 +32,7 @@ visualisation.*
 - Information on statistical and mathematical methods used, as well as data processing.
 - Analysis on our findings.
 
-[References](https://github.com/Artixis/Maths_Project/blob/main/references.md)
+[References](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/references.md)
 - Bibliography 
 - Referencing help
 
