@@ -4,6 +4,8 @@ author: "Laura Pierce"
 date: "2022-09-09"
 ---
 
+This is how I manipulated the population data set into long format.
+
 Libraries needed
 ```{r}
 library("geosphere")
