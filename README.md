@@ -24,7 +24,7 @@ visualisation.*
 [Literature](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/literature.md)
 - Includes notes of useful texts/resources relavent to the project. 
 
-[Hypothesis](https://github.com/Artixis/Maths_Project/blob/main/hypothesis.md)
+[Hypothesis](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/hypothesis.md)
 - Contains our hypothesis for the project. 
 
 [Methodology](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/methodology.md)
