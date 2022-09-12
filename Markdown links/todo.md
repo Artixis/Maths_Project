@@ -3,8 +3,8 @@
 [Main Page](https://github.com/Artixis/Maths_Project/blob/main/README.md)
 
  ### Github set up
-- [ ] Organise notes/literature
-- [ ] Run and compile code (pull/push/commit) both of us.
+- [x] Organise notes/literature
+- [x] Run and compile code (pull/push/commit) both of us.
 
 <br/><br/>
 
