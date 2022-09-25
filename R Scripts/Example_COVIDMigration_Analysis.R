@@ -7,7 +7,7 @@ library(lme4)
 library(lmerTest)
 library(ggplot2)
 
-dt <- read.csv("32180DS0001_2001-21(1).csv",skip=6)
+dt <- read.csv("32180DS0001_2001-21_Analysis.csv",skip=6)
 
 dt <- dt[-1:-2,]
 dt$SA2 <- dt$X.9
@@ -23,7 +23,7 @@ dtlong$pop <- as.numeric(dtlong$pop)
 dtlong$Area <- as.numeric(dtlong$Area)
 dtlong$density <- dtlong$pop/dtlong$Area
 
-dtlong$yearsince2000 <- dtlong$year-2000
+dtlong$yearsince2000 <- dtlong$year-2000 ##
 
 
 syd <- st_read("/Users/russelthomson/Documents/WSU/nbn-trends/data/1270055001_sa2_2016_aust_shape/syd.shp")
