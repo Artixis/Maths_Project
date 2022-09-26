@@ -39,3 +39,19 @@
 - [ ] Again, focus on key points (Although we are albe to say more in the report)
 - [ ] Check final PDF after compiling for any mistakes
 
+### Timeline
+Week 10 (this week): understand Mixed Effects model
+-	Density -- Laura
+-	Mixed-effects code -- My
+-	Interactive term to be passed onto Laura -- My
+-	Maths of Mixed Effects  LaTeX later on -- both take notes of the Maths
+-	Literatures on mixed-effects model -- both
+
+Week 11: 
+Week 12: Start writing (latest)
+Week 13: 
+Week 14: Friday 24 October - 11:59pm
+Week 15: STUVAC
+Week 16: Presentation on Tuesday! (7 November)
+
+
