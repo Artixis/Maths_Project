@@ -41,16 +41,21 @@
 
 ### Timeline
 Week 10 (this week): understand Mixed Effects model
--	Density -- Laura
--	Mixed-effects code -- My
--	Interactive term to be passed onto Laura -- My
--	Maths of Mixed Effects  LaTeX later on -- both take notes of the Maths
--	Literatures on mixed-effects model -- both
+Laura to:
+-	Work on Density and send it over to My
+My to:
+-	Takes care of Mixed-effects code
+-	Interactive term to be passed onto Laura
+Both to:
+-	Understand the Maths of Mixed-Effects model  formulate with LaTeX later on
+-	Research for more miteratures on mixed-effects model: accuracy, precision, etc.
+	- Further notes: Russell passed/failed model in R?
 
-Week 11: 
+Week 11: Questions about Mixed-effects for Russell. Writing and Reading.
 Week 12: Start writing (latest)
-Week 13: 
+Week 13: Progress
 Week 14: Friday 24 October - 11:59pm
+	- Russell will be in Sydney 24 October!
 Week 15: STUVAC
 Week 16: Presentation on Tuesday! (7 November)
 
