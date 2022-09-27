@@ -11,7 +11,7 @@
 ### [Analysis](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/Analysis.md)
 
 
-## [Visualisation](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/visualisation.md)
+### [Visualisation](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/visualisation.md)
 
 
 
