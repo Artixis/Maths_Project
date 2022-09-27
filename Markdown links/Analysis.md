@@ -1,7 +1,5 @@
 ## Analysis 
 
-[Go Back](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/methodology.md)
-
 > Links for models and related literature
 
 

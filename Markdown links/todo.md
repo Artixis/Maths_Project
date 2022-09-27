@@ -54,8 +54,8 @@ Both to:
 Week 11: Questions about Mixed-effects for Russell. Writing and Reading.
 Week 12: Start writing (latest)
 Week 13: Progress
-Week 14: Friday 24 October - 11:59pm
-	- Russell will be in Sydney 24 October!
+Week 14: Friday 28 October - 11:59pm
+	- Russell will be in Sydney Monday 24 October!
 Week 15: STUVAC
 Week 16: Presentation on Tuesday! (7 November)
 
