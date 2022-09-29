@@ -1,0 +1,241 @@
+---
+title: "Population Analysis"
+output: pdf_document
+date: "2022-09-25"
+---
+
+Goals: 
+- Be descriptive, explain each step.
+- Explore the population data set, with the assistance of the shape files. 
+
+- Use appropriate transformations on the variables to improve distribution.
+- Briefly re-examine the linear model and it's effectiveness (or lack there-of)
+when used to describe this data set. 
+- Create a multiple linear regression. Again briefly comment on it's effectiveness.
+
+- Re-create and explore the given mixed effects models. Note that "mixed-effects" 
+encompass a range of different models which fall under this umbrella term, such
+as 'random intercepts'.
+- Comment on the outputs, describing what the different values actually mean and 
+how they are to be interpreted. 
+
+
+- Exact the coefficients from a few of the mixed effects models and try plotting 
+them out(separately).
+
+
+Load Libraries
+```{r, warning=FALSE}
+x <- c("ggmap", "rgdal", "rgeos", "maptools", "dplyr", "tidyr", "tmap", "sf", "MASS", "rgeos", "gmt", "lme4", "lmerTest", "ggplot2", "sf", "tidyverse", "gganimate")
+lapply(x, library, character.only = TRUE) 
+```
+
+Load in the population data set
+The population data set
+```{r}
+dataPop = read.csv("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/populationLong.csv")
+```
+
+
+Manipulate the population data. Create new columns, 'density' and 'yearsince2000'
+Density is calculated for each region, over each of the 20 years. So Alfredton, for example
+has 20 associated samples in our data set. Each year the population, potentially, changes. 
+For each observation we calculate density = population/area. 
+
+yearsince2000 is simply the year column with 2000 subtracted from it.
+```{r}
+dataPop$density <- 0.0    
+dataPop$density <- dataPop$pop/dataPop$area
+dataPop$yearsince2000 <- dataPop$year-2000
+```
+
+
+Transform the density variable
+```{r}
+dataPop$trans_density <- sqrt(dataPop$density)
+```
+
+
+Load in shape file. Greater Sydney needs to be specified. If not, the shape file
+will not be able to match NSW SA2 regions to the population data set, which now,
+only contains NSW regions.
+
+The shape file uses polygons to geometrically decribe Australia by its SA2 regions.
+It includes various fields, the one we mainly reference is SA2_NAME16. This is how
+we match the regions in the shape file to the ones in our population data set.
+```{r}
+syd <- st_read("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/SA2_2016_AUST.shp")
+greaterSyd <- syd[syd$GCC_NAME16=="Greater Sydney",]
+```
+
+st_ centroid
+"Computes a point which is the geometric center of mass of a geometry."
+```{r, warning=FALSE}
+centr <- st_centroid(syd)
+
+centroid_lat <- unlist(lapply(centr$geometry,function(l) l[2]))
+centroid_long <- unlist(lapply(centr$geometry,function(l) l[1]))
+```
+
+Create variables within the shape file sydist and parradist. These are the 
+calculated distance of each SA2 from Sydney and Parramatta respectively.
+
+Log these values to normalize them.
+
+Insert these calculated values into the population data frame by matching
+the two files by SA2 name.
+```{r}
+syd$sydist <- geodist(-33.8688,151.2093,centroid_lat,centroid_long)
+syd$parradist <- geodist(-33.8148,151.0017,centroid_lat,centroid_long)
+dataPop$sydist <- syd$sydist[match(dataPop$name,syd$SA2_NAME16)]
+dataPop$parradist <- syd$parradist[match(dataPop$name,syd$SA2_NAME16)]
+
+dataPop$logsydist <- log(syd$sydist[match(dataPop$name,syd$SA2_NAME16)])
+dataPop$logparradist <- log(syd$parradist[match(dataPop$name,syd$SA2_NAME16)])
+```
+
+
+Run the head and tail end of the data to make sure this has worked
+```{r}
+head(dataPop,5)
+tail(dataPop,5)
+```
+
+# Linear Models
+
+Linear model of the data
+Predicting density with the distance from Sydney as the predictor. 
+```{r}
+pop_lm = lm(trans_density ~ sydist, data = dataPop)
+summary(pop_lm)
+```
+
+// comment
+
+
+Try a multiple linear regression to predict density.
+```{r}
+pop_mlr = lm(trans_density ~ sydist + yearsince2000, data = dataPop)
+summary(pop_mlr)
+```
+
+
+It's still not a great indicator of density change. 
+// comment
+
+
+Let's now try mixed effects. 
+
+
+One last bit of tidying.
+
+1) We assume, from previous scripts, that some of the regions will not match between
+the shape and population files. As such, we will end up with NA values which need 
+to be removed for plotting and, most importantly, model fitting.
+
+2) We should drop any SA2 with a population of zero. These would cause density to
+be equal to 0.
+Regions often have a population of 0. These reasons are varied, from defense bases,
+national parks and large bodies of water, to name a few.
+
+
+For some reason this breaks the code? 
+** DON'T RUN RIGHT NOW, NEED TO FIX **
+#```{r}
+#1
+dataPop <- dataPop[!is.na(dataPop$sydist),]
+
+#2
+
+#Find the 0 pop SA2s
+SA2s_with_zero <- unique(dataPop$SA2[dataPop$density==0])
+
+# Remove them from the data frame
+dataPop <- dataPop[!dataPop$SA2 %in% SA2s_with_zero,]
+#```
+
+
+
+# Mixed Effects Models
+
+Start with a fixed effect model
+```{r}
+fit_fixed <- lm(trans_density~yearsince2000*parradist+yearsince2000*sydist,data=dataPop)
+summary(fit_fixed)
+```
+
+
+Mixed Effect Model, Random Intercepts
+```{r}
+fit_randint <- lmer(trans_density~yearsince2000*logparradist*logsydist+(1|name),data=dataPop)
+summary(fit_randint)
+```
+
+Random Intercept for each SA2  much bigger than residual variation
+this model better than fixed effect.
+
+
+Mixed Effect Model, Random Intercepts and Slopes
+```{r}
+fit_randslope1 <- lmer(trans_density~yearsince2000*parradist*sydist+(yearsince2000|name),data=dataPop)
+summary(fit_randslope1)
+```
+
+Intercept random effect is small. 
+
+
+```{r}
+anova(fit_randint,fit_randslope1)
+```
+
+Random slope model significantly better fit.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Last part of given code, which note, it not yet properly examined/explained. 
+
+#```{r}
+logsydist_1st_3rd_quartile <- quantile(dataPop$logsydist,c(0.25,.75))
+logparradist_1st_3rd_quartile <- quantile(dataPop$logparradist,c(0.25,.75))
+
+
+preds <- data.frame(yearsince2000=rep(1:21,4)
+                    ,logsydist=rep(logsydist_1st_3rd_quartile,each=21)
+                    ,logparradist=rep(logparradist_1st_3rd_quartile,each=42)
+                    ,pred_trans_density=NA)
+preds$sydist <- factor( round(exp(preds$logsydist)) )
+preds$parradist <- factor( round(exp(preds$logparradist)) )
+preds$year <- preds$yearsince2000+2000
+
+preds$pred_trans_density <- predict(fit_randslope1,newdata=preds,re.form=NA)
+
+# Back transform density
+preds$pred_density <- preds$pred_trans_density^2 
+
+# Plot Predictions
+i <- ggplot(preds,aes(year,pred_density)) + expand_limits(y = 0)
+i + geom_line(aes(colour=sydist,linetype=parradist))
+#```
+
+
+
+
+
+
+
+
