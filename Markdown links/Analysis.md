@@ -2,7 +2,9 @@
 
 > Links for models and related literature
 
-
+# Linear Regression 
+[Interpreting Summary](https://feliperego.github.io/blog/2015/10/23/Interpreting-Model-Output-In-R)
+[Another Summary Example](https://boostedml.com/2019/06/linear-regression-in-r-interpreting-summarylm.html)
 
 #### Mixed- Effect Models
 
