@@ -18,3 +18,5 @@
 [Reference from Russell (gitHub)](https://m-clark.github.io/mixed-models-with-R/random_slopes.html)
 
 [Workshop code and slides](https://cloudstor.aarnet.edu.au/plus/s/IC41PpY8ZymLtmU)
+
+[Linear Mixed Effects Models](https://it.unt.edu/sites/default/files/linearmixedmodels_jds_dec2010.pdf)
