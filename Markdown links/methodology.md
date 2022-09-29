@@ -2,16 +2,22 @@
 
 [Main Page](https://github.com/Artixis/Maths_Project/blob/main/README.md)
 
-### Data
+> Methodology is split into four categories. Obviously there will be some overlap between the four. However
+> the idea behind seperating them, is to go into greater detail for each individual part.
+> 
+> The categories are relatively chronological, in that our report will follow as similar layout. 
 
 
-### Processing
+### [Data](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/Data.md)
 
 
-### Methodology/Analysys
+### [Processing](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/Processing.md)
 
 
-## [Visualisation](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/visualisation.md)
+### [Analysis](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/Analysis.md)
+
+
+### [Visualisation](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/visualisation.md)
 
 
 
