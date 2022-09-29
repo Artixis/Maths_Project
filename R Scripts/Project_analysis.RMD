@@ -24,7 +24,6 @@ how they are to be interpreted.
 them out(separately).
 
 
-
 Load Libraries
 ```{r, warning=FALSE}
 x <- c("ggmap", "rgdal", "rgeos", "maptools", "dplyr", "tidyr", "tmap", "sf", "MASS", "rgeos", "gmt", "lme4", "lmerTest", "ggplot2", "sf", "tidyverse", "gganimate")
@@ -34,7 +33,7 @@ lapply(x, library, character.only = TRUE)
 Load in the population data set
 The population data set
 ```{r}
-dataPop = read.csv("C:\\Users/Laura/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/populationLong.csv")
+dataPop = read.csv("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/populationLong.csv")
 ```
 
 
@@ -65,7 +64,7 @@ The shape file uses polygons to geometrically decribe Australia by its SA2 regio
 It includes various fields, the one we mainly reference is SA2_NAME16. This is how
 we match the regions in the shape file to the ones in our population data set.
 ```{r}
-syd <- st_read("C:\\Users/Laura/OneDrive - Western Sydney University/Spring 2022/SA2_2016_AUST.shp")
+syd <- st_read("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/SA2_2016_AUST.shp")
 greaterSyd <- syd[syd$GCC_NAME16=="Greater Sydney",]
 ```
 
@@ -73,6 +72,7 @@ st_ centroid
 "Computes a point which is the geometric center of mass of a geometry."
 ```{r, warning=FALSE}
 centr <- st_centroid(syd)
+
 centroid_lat <- unlist(lapply(centr$geometry,function(l) l[2]))
 centroid_long <- unlist(lapply(centr$geometry,function(l) l[1]))
 ```
@@ -89,6 +89,7 @@ syd$sydist <- geodist(-33.8688,151.2093,centroid_lat,centroid_long)
 syd$parradist <- geodist(-33.8148,151.0017,centroid_lat,centroid_long)
 dataPop$sydist <- syd$sydist[match(dataPop$name,syd$SA2_NAME16)]
 dataPop$parradist <- syd$parradist[match(dataPop$name,syd$SA2_NAME16)]
+
 dataPop$logsydist <- log(syd$sydist[match(dataPop$name,syd$SA2_NAME16)])
 dataPop$logparradist <- log(syd$parradist[match(dataPop$name,syd$SA2_NAME16)])
 ```
@@ -102,40 +103,19 @@ tail(dataPop,5)
 
 # Linear Models
 
-Our first model will be a simple linear model of density predicted by the 
-distance from Sydney. Note that both variables have already been transformed.
-
-Start by plotting the variables to see if there is any visable relationship.
-```{r, warning=FALSE}
-plot(dataPop$logsydist, dataPop$trans_density, xlab="Distance from Sydney", ylab="Density", col = '#56B4E9', addRegLine=TRUE)
-abline(lm(dataPop$trans_density ~ dataPop$logsydist), col = "purple")
-```
-
-
-
 Linear model of the data
 Predicting density with the distance from Sydney as the predictor. 
 ```{r}
-pop_lm = lm(trans_density ~ logsydist, data = dataPop)
+pop_lm = lm(trans_density ~ sydist, data = dataPop)
 summary(pop_lm)
 ```
-Residuals:
-Looking at the residuals the model predicts certain points that fall far away 
-from the actual observed points.
 
-Coefficients:
-
-Residual standard error:
-
-R-squared Values:
-
-
-
+// comment
 
 
 Try a multiple linear regression to predict density.
 ```{r}
-pop_mlr = lm(trans_density ~ logsydist + yearsince2000, data = dataPop)
+pop_mlr = lm(trans_density ~ sydist + yearsince2000, data = dataPop)
 summary(pop_mlr)
 ```
 
@@ -164,9 +144,12 @@ For some reason this breaks the code?
 #```{r}
 #1
 dataPop <- dataPop[!is.na(dataPop$sydist),]
+
 #2
+
 #Find the 0 pop SA2s
 SA2s_with_zero <- unique(dataPop$SA2[dataPop$density==0])
+
 # Remove them from the data frame
 dataPop <- dataPop[!dataPop$SA2 %in% SA2s_with_zero,]
 #```
@@ -229,6 +212,8 @@ Last part of given code, which note, it not yet properly examined/explained.
 #```{r}
 logsydist_1st_3rd_quartile <- quantile(dataPop$logsydist,c(0.25,.75))
 logparradist_1st_3rd_quartile <- quantile(dataPop$logparradist,c(0.25,.75))
+
+
 preds <- data.frame(yearsince2000=rep(1:21,4)
                     ,logsydist=rep(logsydist_1st_3rd_quartile,each=21)
                     ,logparradist=rep(logparradist_1st_3rd_quartile,each=42)
@@ -236,11 +221,21 @@ preds <- data.frame(yearsince2000=rep(1:21,4)
 preds$sydist <- factor( round(exp(preds$logsydist)) )
 preds$parradist <- factor( round(exp(preds$logparradist)) )
 preds$year <- preds$yearsince2000+2000
+
 preds$pred_trans_density <- predict(fit_randslope1,newdata=preds,re.form=NA)
+
 # Back transform density
 preds$pred_density <- preds$pred_trans_density^2 
+
 # Plot Predictions
 i <- ggplot(preds,aes(year,pred_density)) + expand_limits(y = 0)
 i + geom_line(aes(colour=sydist,linetype=parradist))
 #```
+
+
+
+
+
+
+
 
