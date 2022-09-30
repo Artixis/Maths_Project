@@ -6,3 +6,11 @@
 >
 > Transformation techniques, long vs wide data, etc.
 
+
+
+#### Transformation
+##### Box-cox
+[Explaination of box-cox](https://www.statology.org/box-cox-transformation-in-r/)
+
+#### Data Types
+##### Long vs Wide 
