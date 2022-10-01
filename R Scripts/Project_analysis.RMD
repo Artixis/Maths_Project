@@ -1,7 +1,7 @@
 ---
-title: "Population Analysis"
+title: "Population Analysis - My"
 output: pdf_document
-date: "2022-09-25"
+date: "2022-10-01"
 ---
 
 Goals: 
@@ -23,15 +23,12 @@ how they are to be interpreted.
 - Exact the coefficients from a few of the mixed effects models and try plotting 
 them out(separately).
 
-
-Load Libraries
-```{r, warning=FALSE}
-x <- c("ggmap", "rgdal", "rgeos", "maptools", "dplyr", "tidyr", "tmap", "sf", "MASS", "rgeos", "gmt", "lme4", "lmerTest", "ggplot2", "sf", "tidyverse", "gganimate")
-lapply(x, library, character.only = TRUE) 
+```{r, warning=FALSE,results='hide',collapse=TRUE,include=FALSE}
+x <- c("ggmap", "rgeos", "maptools", "dplyr", "tidyr", "sf", "MASS", "rgeos", "gmt", "lme4", "lmerTest", "ggplot2", "sf", "tidyverse", "rgdal", "tmap", "gganimate")
+lapply(x, library, character.only = TRUE)
 ```
 
-Load in the population data set
-The population data set
+Load in the population data set:
 ```{r}
 dataPop = read.csv("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/populationLong.csv")
 ```
