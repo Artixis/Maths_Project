@@ -52,11 +52,30 @@ Both to:
 	- Further notes: Russell passed/failed model in R?
 
 Week 11: Questions about Mixed-effects for Russell. Writing and Reading.
+Week 11 (2/10/2022)
+Laura:
+Email Russell with:
+- [ ] R script with 2020 and 2021 terms in the model
+- [ ] Clarify transformation with math explanation
+- [ ] "Perfect" model with significant p-values
+
+My:
+- [ ] Get math from research on Mixed-Effects model
+- [ ] Prepare LaTeX with proper structures and a few math formulas
+
+
 Week 12: Start writing (latest)
 Week 13: Progress
 Week 14: Friday 28 October - 11:59pm
 	- Russell will be in Sydney Monday 24 October!
 Week 15: STUVAC
 Week 16: Presentation on Tuesday! (7 November)
+
+Week 
+
+
+
+
+
 
 
