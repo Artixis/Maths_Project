@@ -40,7 +40,7 @@
 - [ ] Check final PDF after compiling for any mistakes
 
 ## Tasks and Timeline
-### Week 10: Understand Mixed-Effects model <br>
+### Week 10: Understand Mixed-Effects model
 Laura to:
 -	Work on Density and send it over to My
 My to:
