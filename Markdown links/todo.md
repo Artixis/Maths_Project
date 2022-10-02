@@ -42,10 +42,10 @@
 ## Tasks and Timeline
 ### Week 10: Understand Mixed-Effects model <br>
 Laura to:
--	Work on Density and send it over to My <br>
+-	Work on Density and send it over to My
 My to:
 -	Takes care of Mixed-effects code
--	Interactive term to be passed onto Laura <br>
+-	Interactive term to be passed onto Laura
 Both to:
 -	Understand the Maths of Mixed-Effects model  formulate with LaTeX later on
 -	Research for more miteratures on mixed-effects model: accuracy, precision, etc.
@@ -55,7 +55,7 @@ Both to:
 Laura is emailing Russell with:
 - R script with 2020 and 2021 terms in the model
 - Clarify transformation with math explanation
-- "Perfect" model with significant p-values <br>
+- "Perfect" model with significant p-values
 My:
 - Get math from research on Mixed-Effects model
 - Prepare LaTeX with proper structures and a few math formulas <br>
