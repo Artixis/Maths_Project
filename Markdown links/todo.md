@@ -40,7 +40,7 @@
 - [ ] Check final PDF after compiling for any mistakes
 
 ## Tasks and Timeline
-###### Week 10: Understand Mixed-Effects model <br>
+### Week 10: Understand Mixed-Effects model <br>
 Laura to:
 -	Work on Density and send it over to My <br>
 My to:
@@ -51,7 +51,7 @@ Both to:
 -	Research for more miteratures on mixed-effects model: accuracy, precision, etc.
 	- Further notes: Russell passed/failed model in R?
 
-###### Week 11: Questions about Mixed-effects for Russell. Writing and Reading. <br>
+### Week 11: Questions about Mixed-effects for Russell. Writing and Reading. <br>
 Laura is emailing Russell with:
 - R script with 2020 and 2021 terms in the model
 - Clarify transformation with math explanation
@@ -60,11 +60,11 @@ My:
 - Get math from research on Mixed-Effects model
 - Prepare LaTeX with proper structures and a few math formulas <br>
 
-###### Week 12: Start writing (latest) 
-###### Week 13: Progress
-###### Week 14: Friday 28 October - 11:59pm
+### Week 12: Start writing (latest) 
+### Week 13: Progress
+### Week 14: Friday 28 October - 11:59pm
 	- Russell will be in Sydney Monday 24 October!
-######5: STUVAC
-######6: Presentation on Tuesday! (7 November)
+### Week 15: STUVAC
+### Week 16: Presentation on Tuesday! (7 November)
 
 
