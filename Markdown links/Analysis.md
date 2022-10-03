@@ -25,3 +25,10 @@
 [Workshop code and slides](https://cloudstor.aarnet.edu.au/plus/s/IC41PpY8ZymLtmU)
 
 [Linear Mixed Effects Models](https://it.unt.edu/sites/default/files/linearmixedmodels_jds_dec2010.pdf)
+
+
+### Geographically Weighted Regression
+
+[Introduction + Example](https://rstudio-pubs-static.s3.amazonaws.com/44975_0342ec49f925426fa16ebcdc28210118.html)
+
+[Modelling Variation](https://link.springer.com/article/10.1007/s40980-017-0037-9)
