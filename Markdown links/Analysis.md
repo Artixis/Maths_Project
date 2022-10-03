@@ -13,7 +13,12 @@
 
 [Another Summary Example](https://boostedml.com/2019/06/linear-regression-in-r-interpreting-summarylm.html)
 
-#### Mixed- Effect Models
+
+### Multiple Linear Regression
+
+[R-Output Example](http://www.sthda.com/english/articles/40-regression-analysis/168-multiple-linear-regression-in-r/)
+
+### Mixed- Effect Models
 
 [Reference from Russell (gitHub)](https://m-clark.github.io/mixed-models-with-R/random_slopes.html)
 
