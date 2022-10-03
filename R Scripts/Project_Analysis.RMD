@@ -30,7 +30,7 @@ lapply(x, library, character.only = TRUE)
 
 Load in the population data set:
 ```{r}
-dataPop = read.csv("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/populationLong.csv")
+dataPop = read.csv("C:/Users/viquy/Documents/GitHub/Maths_Project/R Scripts/Data Used/populationLong.csv")
 ```
 
 
@@ -61,7 +61,7 @@ The shape file uses polygons to geometrically decribe Australia by its SA2 regio
 It includes various fields, the one we mainly reference is SA2_NAME16. This is how
 we match the regions in the shape file to the ones in our population data set.
 ```{r}
-syd <- st_read("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/SA2_2016_AUST.shp")
+syd <- st_read("C:/Users/viquy/Documents/GitHub/Maths_Project/R Scripts/Data Used/SA2_2016_AUST.shp")
 greaterSyd <- syd[syd$GCC_NAME16=="Greater Sydney",]
 ```
 
@@ -74,13 +74,11 @@ centroid_lat <- unlist(lapply(centr$geometry,function(l) l[2]))
 centroid_long <- unlist(lapply(centr$geometry,function(l) l[1]))
 ```
 
-Create variables within the shape file sydist and parradist. These are the 
-calculated distance of each SA2 from Sydney and Parramatta respectively.
+Create variables within the shape file sydist and parradist. These are the calculated distance of each SA2 from Sydney and Parramatta respectively.
 
 Log these values to normalize them.
 
-Insert these calculated values into the population data frame by matching
-the two files by SA2 name.
+Insert these calculated values into the population data frame by matching the two files by SA2 name.
 ```{r}
 syd$sydist <- geodist(-33.8688,151.2093,centroid_lat,centroid_long)
 syd$parradist <- geodist(-33.8148,151.0017,centroid_lat,centroid_long)
