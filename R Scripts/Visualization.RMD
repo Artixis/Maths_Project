@@ -1,0 +1,190 @@
+---
+title: "Project Data Visualisation"
+output: pdf_document
+date: "2022-09-19"
+---
+
+library(tidyr)
+library(MASS)
+library(sf)
+library(rgeos)
+library(gmt)
+library(lme4)
+library(lmerTest)
+library(ggplot2)
+
+Libaries
+```{r}
+x <- c("ggmap", "rgdal", "rgeos", "maptools", "dplyr", "tidyr", "tmap", "sf", "MASS", "rgeos", "gmt", "lme4", "lmerTest", "ggplot2")
+lapply(x, library, character.only = TRUE) 
+```
+
+```{r}
+df = read.csv("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/populationLong.csv")
+df$density <- 0.0    
+df$density <- df$pop/df$area
+df$yearsince2000 <- df$year-2000
+head(df,5)
+```
+
+
+
+Load in shape files and population data
+```{r}
+syd <- st_read("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/SA2_2016_AUST.shp")
+```
+
+
+
+
+```{r}
+greaterSyd <- syd[syd$GCC_NAME16=="Greater Sydney",]
+plot(greaterSyd)
+```
+
+Compare density with something else owo
+qtm(shp = lnd, fill = c("Partic_Per", "Pop_2001"), fill.palette = "Blues", ncol = 2)
+
+
+
+```{r}
+qtm(shp = greaterSyd, fill = c("AREASQKM16"), fill.palette = "Blues")
+```
+
+
+
+```{r}
+syd <- syd[syd$GCC_NAME16=="Greater Sydney",]
+centr <- st_centroid(syd)
+```
+
+
+```{r}
+centroid_lat <- unlist(lapply(centr$geometry,function(l) l[2]))
+centroid_long <- unlist(lapply(centr$geometry,function(l) l[1]))
+```
+
+
+```{r}
+syd$sydist <- geodist(-33.8688,151.2093,centroid_lat,centroid_long)
+syd$parradist <- geodist(-33.8148,151.0017,centroid_lat,centroid_long)
+df$sydist <- syd$sydist[match(df$name,syd$SA2_NAME16)]
+df$parradist <- syd$parradist[match(df$name,syd$SA2_NAME16)]
+
+df$logsydist <- log(syd$sydist[match(df$name,syd$SA2_NAME16)])
+df$logparradist <- log(syd$parradist[match(df$name,syd$SA2_NAME16)])
+
+```
+
+
+
+```{r}
+qtm(shp = syd, fill = c("sydist"), fill.palette = "Blues", title = "NSW Distance Map")
+```
+
+
+```{r}
+syd_30 <- syd[syd$sydist < 30,]
+qtm(shp = syd_30, fill = c("sydist", "AREASQKM16"), fill.palette = "Purples", ncol = 2, title = c('Distance', 'Area'))
+```
+
+
+
+
+```{r}
+syd_20 <- syd[syd$sydist < 20,]
+qtm(shp = syd_20, fill = c("sydist", "AREASQKM16"), fill.palette = "Blues", ncol = 2, title = c('Distance', 'Area'))
+```
+
+How to subset based on multiple condition
+
+```{r}
+pop2002 <- df[(df$year == 2016) | (df$year == 2017),]
+head(pop2002,40)
+```
+
+
+```{r}
+syd$popNum <- pop2002$pop[match(syd$SA2_NAME16, pop2002$name)]
+```
+
+
+
+```{r}
+pop2002[pop2002$name=="Wyong",]
+```
+
+
+```{r}
+qtm(shp = syd, fill = c("popNum"), fill.palette = "Purples") +
+      tm_legend(legend.position = c("left", "top"),
+          main.title = "2016 Population in Greater Sydney",
+          main.title.position = "middle"
+          )
+```
+
+
+?qtm
+```{r}
+RColorBrewer::display.brewer.all()
+```
+
+
+Fix this up and try new stuff
+```{r}
+pop2002 <- df[df$year == 2016,]
+head(pop2002,40)
+```
+
+
+```{r}
+syd$popNum <- pop2002$pop[match(syd$SA2_NAME16, pop2002$name)]
+```
+
+
+Goals: 
+Could create for loop for plotting separate years. 
+Look into faceting 
+
+Load in original Russell data
+```{r}
+df2 = read.csv("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/Russell Data.csv")
+head(df2)
+```
+
+
+```{r}
+syd2 <- st_read("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/SA2_2016_AUST.shp")
+```
+
+
+
+syd$popNum <- pop2002$pop[match(syd$SA2_NAME16, pop2002$name)]
+
+```{r}
+syd2$years <- df2$TIME_FY[match(syd2$SA2_NAME16, df2$Region)]
+```
+
+```{r}
+syd2$migration <- df2$Value[match(syd2$SA2_NAME16, df2$Region)]
+```
+
+
+
+```{r}
+head(syd2$AREASQKM16)
+```
+
+
+
+
+```{r}
+tm_shape(syd2) +
+    tm_polygons("AREASQKM16", title="Uhhh") +
+    tm_facets("years")
+```
+
+
+```{r}
+qtm(shp = syd2, fill = c("migration"), fill.palette = "Blues", title = "NSW migration Map")
+```
