@@ -33,3 +33,11 @@
 [Introduction + Example](https://rstudio-pubs-static.s3.amazonaws.com/44975_0342ec49f925426fa16ebcdc28210118.html)
 
 [Modelling Variation](https://link.springer.com/article/10.1007/s40980-017-0037-9)
+
+
+### Other Stuff
+
+[Predicting in R](https://campus.datacamp.com/courses/machine-learning-with-caret-in-r/regression-models-fitting-them-and-evaluating-their-performance?ex=8)
+
+
+
