@@ -26,6 +26,7 @@
 
 [Linear Mixed Effects Models](https://it.unt.edu/sites/default/files/linearmixedmodels_jds_dec2010.pdf)
 
+[Difference between fixed and random](https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode)
 
 ### Geographically Weighted Regression
 
