@@ -7,6 +7,8 @@
 > 
 > The categories are relatively chronological, in that our report will follow as similar layout. 
 
+>[R-Cran Cheat sheet](https://cran.r-project.org/doc/contrib/R_language.pdf)
+
 
 ### [Data](https://github.com/Artixis/Maths_Project/blob/main/Markdown%20links/Data.md)
 
