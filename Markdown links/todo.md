@@ -12,7 +12,7 @@
 
 > Possibly look at one data set each?
 
-- [ ] Map distance using the shape files.
+- [x] Map distance using the shape files.
 - [ ] Investigate and really understand mixed effect models.
 - [ ] ^ Do the same with geographically weighted regression
 - [ ] Start research into how to geographically visualize data with lat/long values.
