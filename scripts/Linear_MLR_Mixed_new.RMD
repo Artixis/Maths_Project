@@ -25,7 +25,7 @@ them out(separately).
 
 
 Load Libraries
-```{r, warning=FALSE}
+```{r, warning=FALSE,include=FALSE}
 x <- c("ggmap", "rgdal", "rgeos", "maptools", "dplyr", "tidyr", "tmap", "sf", "MASS", "rgeos", "gmt", "lme4", "lmerTest", "ggplot2", "sf", "tidyverse", "gganimate")
 lapply(x, library, character.only = TRUE) 
 ```
@@ -33,7 +33,7 @@ lapply(x, library, character.only = TRUE)
 Load in the population data set
 The population data set
 ```{r}
-dataPop = read.csv("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/populationLong.csv")
+dataPop = read.csv("C:/Users/viquy/Documents/GitHub/Maths_Project/scripts/datasets/populationLong.csv")
 ```
 
 
@@ -67,7 +67,7 @@ The shape file uses polygons to geometrically decribe Australia by its SA2 regio
 It includes various fields, the one we mainly reference is SA2_NAME16. This is how
 we match the regions in the shape file to the ones in our population data set.
 ```{r}
-syd <- st_read("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/SA2_2016_AUST.shp")
+syd <- st_read("C:/Users/viquy/Documents/GitHub/Maths_Project/scripts/datasets/SA2_2016_AUST.shp")
 greaterSyd <- syd[syd$GCC_NAME16=="Greater Sydney",]
 ```
 
@@ -161,9 +161,6 @@ This suggests that the density of SA2 regions decreases as the move away from
 Sydney. 
 However it is important to acknowledge that many of the observations lay far 
 away from the purple regression line that has been overlayed onto the plot. 
-
-
-
 
 
 
@@ -369,7 +366,7 @@ this model better than fixed effect.
 
 
 Mixed Effect Model, Random Intercepts and Slopes
-```{r}
+```{r,warning=FALSE}
 fit_randslope1 <- lmer(trans_density~yearsince2000*parradist*sydist+(yearsince2000|name),data=dataPop)
 summary(fit_randslope1)
 ```
