@@ -111,6 +111,13 @@ Run the head and tail end of the data to make sure this has worked
 head(dataPop,5)
 tail(dataPop,5)
 ```
+```{r}
+# bc <- boxcox(lm(density~yearsince2000*parradist+yearsince2000*sydist,data=dtlong[dtlong$density>0,]))
+# bc$x[which.max(bc$y)]
+```
+
+
+
 A brief comparison of how effective the transformation on the density variable
 was. 
 Compare the mean and median of the original variable. 
@@ -301,7 +308,7 @@ Some definitions:
 Fixed effects:
 Fixed effects are variables that are constant across individuals. Think of ethnicity
 which doesn't change OR age which changes at a constant rate over time. These
-are fixed effects. 
+are fixed effects.
 
 Limitations:
 Variables that are random will be treated as though they are non-random. 
@@ -367,15 +374,21 @@ this model better than fixed effect.
 
 Mixed Effect Model, Random Intercepts and Slopes
 ```{r,warning=FALSE}
-fit_randslope1 <- lmer(trans_density~yearsince2000*parradist*sydist+(yearsince2000|name),data=dataPop)
+fit_randslope1 <- lmer(trans_density~yearsince2000*parradist*sydist+(yearsince2000|name), data=dataPop)
 summary(fit_randslope1)
 ```
 
 Intercept random effect is small. 
 
+```{r,warnings=FALSE}
+fit_randslope2 <- lmer(trans_density~yearsince2000*parradist*sydist+yearsince2000*parradist*sydist*(year=2020), yearsince2000*parradist*sydist*(year=2021), data=dataPop)
+summary(fit_randslope2)
+```
+
 
 ```{r}
 anova(fit_randint,fit_randslope1)
+density = dist1*dist2*time + dist1*dist2*(year=2020) + dist1*dist2*(year=2021)
 ```
 
 Random slope model significantly better fit.
