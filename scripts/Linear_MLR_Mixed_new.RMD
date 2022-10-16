@@ -407,7 +407,10 @@ dataPop$year2021= (dataPop$yearsince2000 == 21)
 
  
 
-model_fit = lmer(trans_density ~ logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021 + (1|name),data=dataPop)
+model_fit = lmer(trans_density ~ logsydist*logparradist*yearsince2000
+                 + logsydist*logparradist*year2020
+                 +  logsydist*logparradist*year2021
+                 + (1|name),data=dataPop)
 
 
 plot(model_fit)
@@ -418,14 +421,17 @@ summary(model_fit)
 print(model_fit, correlation=TRUE)
 ```
 
-MY - Random Intercept model
-```{r}
+Expansion: The Model Summary table
 
+The following code returns the R-squared values for the above mixed-effects model.
+The package `MuMIn` gives this information, install version of R >= 4.2.0 beforehand!
+
+```{r}
+#library("MuMIn") # needs R > 4.2.0
+r.squaredGLMM(model_fit)
 ```
 
-
-
-
+Can we obtain AIC, BIC next?
 
 
 
