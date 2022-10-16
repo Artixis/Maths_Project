@@ -340,8 +340,8 @@ summary(fit_randint)
 plot(fit_randint)
 ```
 
-Random Intercept for each SA2  much bigger than residual variation
-this model better than fixed effect.
+Random Intercept for each SA2  much bigger than residual variation.
+This model is better than fixed effects.
 
 
 Mixed Effect Model, Random Intercepts and Slopes
@@ -418,6 +418,10 @@ summary(model_fit)
 print(model_fit, correlation=TRUE)
 ```
 
+MY - Random Intercept model
+```{r}
+
+```
 
 
 
