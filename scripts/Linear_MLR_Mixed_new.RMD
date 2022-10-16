@@ -25,7 +25,7 @@ them out(separately).
 
 
 Load Libraries
-```{r, warning=FALSE,include=FALSE}
+```{r, warning=FALSE}
 x <- c("ggmap", "rgdal", "rgeos", "maptools", "dplyr", "tidyr", "tmap", "sf", "MASS", "rgeos", "gmt", "lme4", "lmerTest", "ggplot2", "sf", "tidyverse", "gganimate")
 lapply(x, library, character.only = TRUE) 
 ```
@@ -103,21 +103,19 @@ dataPop$parradist <- syd$parradist[match(dataPop$name,syd$SA2_NAME16)]
 
 dataPop$logsydist <- log(syd$sydist[match(dataPop$name,syd$SA2_NAME16)])
 dataPop$logparradist <- log(syd$parradist[match(dataPop$name,syd$SA2_NAME16)])
-```
 
+head(dataPop$sydist)
+```
+```{r}
+# Drop SA2's without syddist
+# df <- df[!is.na(df$sydist),]
+```
 
 Run the head and tail end of the data to make sure this has worked
 ```{r}
 head(dataPop,5)
 tail(dataPop,5)
 ```
-```{r}
-# bc <- boxcox(lm(density~yearsince2000*parradist+yearsince2000*sydist,data=dtlong[dtlong$density>0,]))
-# bc$x[which.max(bc$y)]
-```
-
-
-
 A brief comparison of how effective the transformation on the density variable
 was. 
 Compare the mean and median of the original variable. 
@@ -170,7 +168,6 @@ However it is important to acknowledge that many of the observations lay far
 away from the purple regression line that has been overlayed onto the plot. 
 
 
-
 --------------------------------------------------------------------------------
 Models
 --------------------------------------------------------------------------------
@@ -184,6 +181,8 @@ summary(pop_lm)
 ```
 
 Interpreting the summary output: 
+
+
 
 Residuals: 
 There is not a very strong symmetrical distribution in the residuals. This is 
@@ -267,39 +266,6 @@ unit, the other two variables are transformed, hence me decribing them as
 'units'.
 
 
-
---------------------------------------------------------------------------------
-Breaks subsequent models. Will fix later.
-
-
-One last bit of tidying.
-1) We assume, from previous scripts, that some of the regions will not match between
-the shape and population files. As such, we will end up with NA values which need 
-to be removed for plotting and, most importantly, model fitting.
-
-2) We should drop any SA2 with a population of zero. These would cause density to
-be equal to 0.
-Regions often have a population of 0. These reasons are varied, from defense bases,
-national parks and large bodies of water, to name a few.
-(Do this BEFORE any other calculations)
-#```{r}
-#1
-dataPop <- dataPop[!is.na(dataPop$sydist),]
-
-#2
-
-#Find the 0 pop SA2s
-SA2s_with_zero <- unique(dataPop$SA2[dataPop$density==0])
-
-# Remove them from the data frame
-dataPop <- dataPop[!dataPop$SA2 %in% SA2s_with_zero,]
-#```
---------------------------------------------------------------------------------
-
-
-
-
-
 --------------------------------------------------------------------------------
 Mixed Effects Models
 --------------------------------------------------------------------------------
@@ -308,7 +274,7 @@ Some definitions:
 Fixed effects:
 Fixed effects are variables that are constant across individuals. Think of ethnicity
 which doesn't change OR age which changes at a constant rate over time. These
-are fixed effects.
+are fixed effects. 
 
 Limitations:
 Variables that are random will be treated as though they are non-random. 
@@ -359,6 +325,11 @@ summary(fit_fixed_norm)
 The only concerning thing is that in both models yearsince2000:parradist
 and yearsince2000:sydist are not apparently significant given their p-values. 
 
+```{r}
+rand_model_test <- lmer(trans_density~(1|name),data=dataPop)
+summary(rand_model_test)
+plot(rand_model_test)
+```
 
 
 Mixed Effect Model, Random Intercepts
@@ -366,6 +337,7 @@ Mixed Effect Model, Random Intercepts
 #| -> General sub scripting operator, selects top-level elements.
 fit_randint <- lmer(trans_density~yearsince2000*logparradist*logsydist+(1|name),data=dataPop)
 summary(fit_randint)
+plot(fit_randint)
 ```
 
 Random Intercept for each SA2  much bigger than residual variation
@@ -373,33 +345,30 @@ this model better than fixed effect.
 
 
 Mixed Effect Model, Random Intercepts and Slopes
-```{r,warning=FALSE}
-fit_randslope1 <- lmer(trans_density~yearsince2000*parradist*sydist+(yearsince2000|name), data=dataPop)
+```{r}
+fit_randslope1 <- lmer(trans_density~yearsince2000*parradist*sydist+(yearsince2000|name),data=dataPop)
 summary(fit_randslope1)
+plot(fit_randslope1)
+```
+
+```{r}
+head(coef(fit_randslope1))
 ```
 
 Intercept random effect is small. 
 
-```{r,warnings=FALSE}
-fit_randslope2 <- lmer(trans_density~yearsince2000*parradist*sydist+yearsince2000*parradist*sydist*(year=2020), yearsince2000*parradist*sydist*(year=2021), data=dataPop)
-summary(fit_randslope2)
-```
-
 
 ```{r}
 anova(fit_randint,fit_randslope1)
-density = dist1*dist2*time + dist1*dist2*(year=2020) + dist1*dist2*(year=2021)
 ```
 
 Random slope model significantly better fit.
 
 
 
-
-
 --------------------------------------------------------------------------------
-Last part of given code, which note, it not yet properly examined/explained. 
-Need the data manipulation above to work in order to run this code.
+Last part of given code.
+This works in pop_mixed.RMD
 --------------------------------------------------------------------------------
 
 
@@ -427,31 +396,27 @@ i + geom_line(aes(colour=sydist,linetype=parradist))
 #```
 
 
-
-
-
-
-
 --------------------------------------------------------------------------------
 Predictive Model Approach
 --------------------------------------------------------------------------------
 
-data_train <- data[data$yearsince2000 < 20,]
-data_test <- data[data$yearsince2000 > 19,]
+```{r}
+dataPop$year2020 = (dataPop$yearsince2000 == 20)
+
+dataPop$year2021= (dataPop$yearsince2000 == 21)
+
+ 
+
+model_fit = lmer(trans_density ~ logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021 + (1|name),data=dataPop)
 
 
-linear_model = lm(trans_density ~ logsydist, data = data)
+plot(model_fit)
+summary(model_fit)
+```
 
-p <- predict(linear_model, data_test)
-
-library("caret")
-confit = confusionMatrix(data = p, reference =data_test$trans_density)
-
-^ Issue with differing levels 
-Could categorize density into a fixed number of levels. 
-Only *issue*  or confusing part to me is that density is transformed and 
-the predictions are based on transformed distances as well. 
-
+```{r}
+print(model_fit, correlation=TRUE)
+```
 
 
 
