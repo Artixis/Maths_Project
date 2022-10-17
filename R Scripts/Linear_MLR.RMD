@@ -1,0 +1,601 @@
+---
+title: "Population Analysis"
+output: pdf_document
+date: "2022-09-25"
+---
+
+Goals: 
+- Be descriptive, explain each step.
+- Explore the population data set, with the assistance of the shape files. 
+
+- Use appropriate transformations on the variables to improve distribution.
+- Briefly re-examine the linear model and it's effectiveness (or lack there-of)
+when used to describe this data set. 
+- Create a multiple linear regression. Again briefly comment on it's effectiveness.
+
+- Re-create and explore the given mixed effects models. Note that "mixed-effects" 
+encompass a range of different models which fall under this umbrella term, such
+as 'random intercepts'.
+- Comment on the outputs, describing what the different values actually mean and 
+how they are to be interpreted. 
+
+
+- Exact the coefficients from a few of the mixed effects models and try plotting 
+them out(separately).
+
+
+Load Libraries
+```{r, warning=FALSE}
+x <- c("ggmap", "rgdal", "rgeos", "maptools", "dplyr", "tidyr", "tmap", "sf", "MASS", "rgeos", "gmt", "lme4", "lmerTest", "ggplot2", "sf", "tidyverse", "gganimate")
+lapply(x, library, character.only = TRUE) 
+```
+
+Load in the population data set
+The population data set
+```{r}
+dataPop = read.csv("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/populationLong.csv")
+```
+
+```{r}
+dataPop = subset(dataPop, select = -c(numChange,perChange) )
+dataPop
+```
+
+
+Manipulate the population data. Create new columns, 'density' and 'yearsince2000'
+Density is calculated for each region, over each of the 20 years. So Alfredton, for example
+has 20 associated samples in our data set. Each year the population, potentially, changes. 
+For each observation we calculate density = population/area. 
+
+yearsince2000 is simply the year column with 2000 subtracted from it.
+```{r}
+dataPop$density <- 0.0    
+dataPop$density <- dataPop$pop/dataPop$area
+dataPop$yearsince2000 <- dataPop$year-2000
+```
+
+
+Transform the density variable
+A square root transformation was chosen after running
+a simple linear model with density as the predictor through
+the box-cox function.
+```{r}
+dataPop$trans_density <- sqrt(dataPop$density)
+```
+
+
+Load in shape file. Greater Sydney needs to be specified. If not, the shape file
+will not be able to match NSW SA2 regions to the population data set, which now,
+only contains NSW regions.
+
+The shape file uses polygons to geometrically decribe Australia by its SA2 regions.
+It includes various fields, the one we mainly reference is SA2_NAME16. This is how
+we match the regions in the shape file to the ones in our population data set.
+```{r}
+syd <- st_read("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/SA2_2016_AUST.shp")
+greaterSyd <- syd[syd$GCC_NAME16=="Greater Sydney",]
+```
+
+```{r}
+head(greaterSyd)
+```
+
+
+
+st_ centroid
+"Computes a point which is the geometric center of mass of a geometry."
+```{r, warning=FALSE}
+centr <- st_centroid(syd)
+
+centroid_lat <- unlist(lapply(centr$geometry,function(l) l[2]))
+centroid_long <- unlist(lapply(centr$geometry,function(l) l[1]))
+```
+
+Create variables within the shape file sydist and parradist. These are the 
+calculated distance of each SA2 from Sydney and Parramatta respectively.
+
+Log these values to normalize them.
+
+Insert these calculated values into the population data frame by matching
+the two files by SA2 name.
+
+
+NOTE:
+Look into geodist, is the function using haversine as it's distance formula?
+If not, find out which one it is. 
+
+Regardless, a brief explaination of how distance is calculated using the 
+centroids and geodist function would be useful to us and the reader/audience.
+```{r}
+syd$sydist <- geodist(-33.8688,151.2093,centroid_lat,centroid_long)
+syd$parradist <- geodist(-33.8148,151.0017,centroid_lat,centroid_long)
+dataPop$sydist <- syd$sydist[match(dataPop$name,syd$SA2_NAME16)]
+dataPop$parradist <- syd$parradist[match(dataPop$name,syd$SA2_NAME16)]
+
+dataPop$logsydist <- log(syd$sydist[match(dataPop$name,syd$SA2_NAME16)])
+dataPop$logparradist <- log(syd$parradist[match(dataPop$name,syd$SA2_NAME16)])
+
+head(dataPop$sydist)
+```
+```{r}
+# Drop SA2's without syddist
+df <- df[!is.na(df$sydist),]
+```
+
+Run the head and tail end of the data to make sure this has worked
+```{r}
+head(dataPop,5)
+tail(dataPop,5)
+```
+A brief comparison of how effective the transformation on the density variable
+was. 
+Compare the mean and median of the original variable. 
+There must be some very large density SA2's skewing these results
+```{r}
+median(dataPop$density)
+mean(dataPop$density)
+```
+
+
+However after performing the square root transformation there is a much
+smaller gap between the two. 
+
+Ideally in an evenly distributed data set or variable, the mean and median
+will be very close to equal.
+```{r}
+median(dataPop$trans_density)
+mean(dataPop$trans_density)
+```
+
+
+--------------------------------------------------------------------------------
+Visualize the data
+--------------------------------------------------------------------------------
+
+
+Plot the variables not transformed
+```{r, warning = FALSE}
+plot(dataPop$sydist, dataPop$density, xlab = "Distance from Sydney", 
+     ylab = "Density",main="Scatter plot of Distance vs Density (Raw Data)" , col = "#CC99FF", addRegLine=TRUE)
+abline(lm(dataPop$density ~ dataPop$sydist), col="#56B4E9", lwd = 2.5)
+```
+
+
+
+Now graph our transformed variables of density and Sydney distance 
+to see if there's a visual indication of a linear relationship between the 
+two. 
+
+```{r, warning = FALSE}
+plot(dataPop$logsydist, dataPop$trans_density, xlab = "Logged Distance from Sydney", 
+     ylab = "Square root of Density",main="Scatter plot of Distance vs Density" , col = "#56B4E9", addRegLine=TRUE)
+abline(lm(dataPop$trans_density ~ dataPop$logsydist), col="#CC99FF", lwd = 2.5)
+```
+
+From the there does seem to be a negative relationship between the two variables.
+This suggests that the density of SA2 regions decreases as the move away from 
+Sydney. 
+However it is important to acknowledge that many of the observations lay far 
+away from the purple regression line that has been overlayed onto the plot. 
+
+
+--------------------------------------------------------------------------------
+Models
+--------------------------------------------------------------------------------
+
+
+Linear model of the data
+Predicting density with the distance from Sydney as the predictor. 
+```{r}
+pop_lm = lm(trans_density ~ logsydist, data = dataPop)
+summary(pop_lm)
+```
+
+Interpreting the summary output: 
+
+
+
+Residuals: 
+There is not a very strong symmetrical distribution in the residuals. This is 
+actually what we'd expect given our previous scatterplot because this implies
+that the model will predict points that fall far away from the actual observed 
+points. 
+
+Coefficients:
+Estimate
+Analyzing the coefficients is a little bit confusing since the variables have been 
+transformation. 
+For now I'll describe each variable in terms of "units" rather than kms or
+density(as pop/area). 
+The intercept is the expected density units when considering the average distance
+units in logsydist. 
+The logsydist estimate coefficient suggest that for every one unit of distance from
+Sydney, the density will drop by -13.2925 units (As we saw from our regression line
+in the scatter plot)
+
+
+Std. Error
+"The coefficient Standard Error measures the average amount that the coefficient estimates vary from the actual average value of our response variable. "
+Looking at logsydist, the distance can vary by 0.1351 units in our prediction.
+
+t-values 
+Our t-values are far away from zero and large compared to the standard errors, 
+which can indicate a relationship. 
+These values are used to calculate the p-value. 
+
+Pr(>t)
+Both p-value a highly significant to this model. We can conclude that there 
+is a relationship between distance and density.
+
+
+Residual standard error: 
+"Residual Standard Error is measure of the quality of a linear regression fit. Theoretically, every linear model is assumed to contain an error term E."
+In our model that actual distance can deviate from the true regression line 
+by 15.33 units. So we can calculate the percentage error from this using
+the intercept(Mean density) is 18.0635%, not bad?
+So any prediction will be off by 18.0635%
+
+R-Squared
+"A side note: In multiple regression settings, the R2 will always increase as more variables are included in the model. That’s why the adjusted R2 is the preferred measure as it adjusts for the number of variables considered." 
+
+Our Adjusted R-squared = 0.5916 
+This indicates that our model explains 59.16% of the variance found in the 
+response variable(density) can be explained by the predictor variable(distance).
+
+
+F-Statistic:
+9686 on 1 and 6686 DF
+Again this is another indicator of a relationship between predictor and 
+response. 
+
+
+
+Multiple Linear Regression
+
+Try a multiple linear regression to predict density.
+```{r}
+pop_mlr = lm(trans_density ~ logsydist + yearsince2000, data = dataPop)
+summary(pop_mlr)
+```
+
+Interpreting the summary output: 
+The output is extremely similar to the previous model. 
+
+Differences:
+The yearsince2000 variable has slightly less significance in the model 
+compared to the previous two. However it's p-value is not so low as the 
+omit the variable entirely from the model. 
+This model actually accounts for more of the variance in the data, albeit only
+0.05% of the variance(From the Adjusted R-squared). 
+The coefficients for the intercept and distance are almost the same as the 
+previous model. 
+The yearsince2000 only slightly effects our change in  density. That is, for 
+every yearsince2000, we only see a 0.09625 change in our density unit. 
+
+^ yearsince200 is not transformed so we can acknowledge the year change as a
+unit, the other two variables are transformed, hence me decribing them as 
+'units'.
+
+
+--------------------------------------------------------------------------------
+Mixed Effects Models
+--------------------------------------------------------------------------------
+Some definitions: 
+
+Fixed effects:
+Fixed effects are variables that are constant across individuals. Think of ethnicity
+which doesn't change OR age which changes at a constant rate over time. These
+are fixed effects. 
+
+Limitations:
+Variables that are random will be treated as though they are non-random. 
+"For example, in regression analysis, “fixed effects” regression fixes 
+(holds constant) average effects for whatever variable you think might affect the outcome of your analysis."
+
+There is more talk on variables that require dummy variables but this doesn't
+apply to our model.
+
+
+
+Random effects models:
+The variables are random/unpredictable. 
+e.g the cost of a three course dinner would greatly vary depending on location.
+
+
+
+Mixed-Models:
+A mixture of fixed and random. 
+
+
+
+Fixed effects model.
+```{r}
+fit_fixed <- lm(trans_density~yearsince2000*parradist+yearsince2000*sydist,data=dataPop)
+summary(fit_fixed)
+```
+
+Output Summary Interpretation:
+I'm assuming we can interpret this in the same way we approached the linear
+model. The only difference being the ways in which we examine the 
+variables like yearsince2000:parradist and yearsince2000:sydist.
+
+If so we can say this model performs poorly compared to the multiple linear 
+regression and linear models above.
+
+
+However, we've not used the transformed variables in this model? 
+Try it with the normalized variables.
+
+```{r}
+fit_fixed_norm <- lm(trans_density~yearsince2000*logparradist+yearsince2000*logsydist,data=dataPop)
+summary(fit_fixed_norm)
+```
+
+^ This performs similarly to the previous models. Accounting for roughly
+59.51% of the variance in the data
+The only concerning thing is that in both models yearsince2000:parradist
+and yearsince2000:sydist are not apparently significant given their p-values. 
+
+```{r}
+rand_model_test <- lmer(trans_density~(1|name),data=dataPop)
+summary(rand_model_test)
+plot(rand_model_test)
+qqnorm(resid(rand_model_test))
+qqline(resid(rand_model_test))
+```
+
+
+Mixed Effect Model, Random Intercepts
+```{r}
+#| -> General sub scripting operator, selects top-level elements.
+fit_randint <- lmer(trans_density~yearsince2000*logparradist*logsydist+(1|name),data=dataPop)
+summary(fit_randint)
+plot(fit_randint)
+```
+
+
+```{r}
+ranEff = ranef(fit_randint)$name
+ranEff
+```
+
+
+Random Intercept for each SA2  much bigger than residual variation
+this model better than fixed effect.
+
+
+Mixed Effect Model, Random Intercepts and Slopes
+```{r}
+fit_randslope1 <- lmer(trans_density~yearsince2000*parradist*sydist+(yearsince2000|name),data=dataPop)
+summary(fit_randslope1)
+plot(fit_randslope1)
+```
+
+```{r}
+ranEff = ranef(fit_randslope1)$name
+ranEff
+```
+
+Intercept random effect is small. 
+
+
+```{r}
+anova(fit_randint,fit_randslope1)
+```
+
+Random slope model significantly better fit.
+
+
+
+--------------------------------------------------------------------------------
+Last part of given code.
+This works in pop_mixed.RMD
+--------------------------------------------------------------------------------
+
+
+#```{r}
+logsydist_1st_3rd_quartile <- quantile(dataPop$logsydist,c(0.25,.75))
+logparradist_1st_3rd_quartile <- quantile(dataPop$logparradist,c(0.25,.75))
+
+
+preds <- data.frame(yearsince2000=rep(1:21,4)
+                    ,logsydist=rep(logsydist_1st_3rd_quartile,each=21)
+                    ,logparradist=rep(logparradist_1st_3rd_quartile,each=42)
+                    ,pred_trans_density=NA)
+preds$sydist <- factor( round(exp(preds$logsydist)) )
+preds$parradist <- factor( round(exp(preds$logparradist)) )
+preds$year <- preds$yearsince2000+2000
+
+preds$pred_trans_density <- predict(fit_randslope1,newdata=preds,re.form=NA)
+
+# Back transform density
+preds$pred_density <- preds$pred_trans_density^2 
+
+# Plot Predictions
+i <- ggplot(preds,aes(year,pred_density)) + expand_limits(y = 0)
+i + geom_line(aes(colour=sydist,linetype=parradist))
+#```
+
+
+--------------------------------------------------------------------------------
+Predictive Model Approach
+--------------------------------------------------------------------------------
+
+```{r}
+anova(model_fit,model_fit2)
+```
+
+
+
+```{r}
+
+model_fit2 = lmer(trans_density ~ logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021 + (yearsince2000|name),data=dataPop)
+
+
+random_coef = coef(model_fit2)$name
+random_coef
+
+#row.names(random_coef)
+```
+
+```{r}
+p <- predict(linear_model,newdata=data.frame(logparradist=c(0,1.609438), logsydist) )
+```
+
+```{r}
+log(5)
+```
+
+```{r}
+mod = lm(trans_density~logsydist + yearsince2000, data=dataPop)
+plot(mod)
+```
+
+
+```{r}
+dataPop$year2020 = (dataPop$yearsince2000 == 20)
+
+dataPop$year2021= (dataPop$yearsince2000 == 21)
+
+ 
+
+model_fit = lmer(trans_density ~ logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021 + (1|name),data=dataPop)
+
+qqnorm(resid(model_fit))
+qqline(resid(model_fit))
+#plot(model_fit)
+#summary(model_fit)
+```
+
+```{r}
+print(model_fit, correlation=TRUE)
+```
+
+
+```{r}
+random_eff = ranef(model_fit)$name
+random_eff
+```
+
+```{r}
+random_coef = coef(model_fit)$name
+random_coef
+```
+
+```{r}
+length(syd$SA2_NAME16)
+length(unique(syd$SA2_NAME16))
+```
+```{r}
+length(dataPop$name)
+length(unique(dataPop$name))
+
+length(unique(dataPop$sydist))
+```
+
+
+
+
+Need this chunk to work for the next chunk
+```{r}
+fixed_effects = fixef(model_fit)
+random_effects = 
+  random_coef %>%
+  mutate(name = factor(unique(dataPop$name)))
+```
+
+Since this SA2 data is from 2016 I can only really use SA2's with names consistent from 2016.
+Drop missing ones?
+This is an issue with trying to reproduce the next plot as well
+
+```{r}
+# This is how I want to plot the random slopes
+# Pretty sure
+dataPop %>% 
+  ggplot(aes(logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021, trans_density)) +
+  geom_point(aes(color = name), alpha = .25) +
+  geom_abline(
+    aes(
+      intercept = fixed_effects['(Intercept)'],
+      slope = fixed_effects['Name']),
+    color = 'darkred',
+    size = 2) +
+  geom_abline(
+    aes(
+      intercept = `(Intercept)`, 
+      slope = logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021,
+      color = name),
+    size = .5,
+    alpha = .25,
+    data = random_eff) 
+```
+
+
+
+
+
+
+
+
+
+
+model_fit = lmer(trans_density ~ logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021 + (1|name),data=dataPop)
+model_lm = lm(trans_density ~ logsydist + yearsince2000)
+
+```{r}
+model_lm = lm(trans_density ~ logsydist + yearsince2000, data = dataPop)
+```
+
+
+```{r}
+gpa_lm_by_group0 = lmList(trans_density ~ yearsince2000 | name, dataPop)
+gpa_lm_by_group  = coef(gpa_lm_by_group0)
+
+gint = 
+  data_frame(Mixed=coef(model_fit)$name[,1], Separate=gpa_lm_by_group[,1]) %>% 
+  gather(key=Model, value=Intercept) %>% 
+  ggplot(aes(x=Intercept)) +
+  geom_density(aes(color=Model, fill=Model), alpha=.25) +
+  scale_color_viridis_d(begin = .25, end = .75) +
+  scale_fill_viridis_d(begin = .25, end = .75) +
+  ggtitle('Intercepts') +
+  labs(x='', y='') +
+  xlim(c(1.5,4)) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    legend.key.size=unit(2, 'mm'),
+    legend.title=element_text(size=8),
+    legend.text=element_text(size=8),
+    legend.box.spacing=unit(0, 'in'),
+    legend.position=c(.85,.75)
+    )
+
+gslopes = 
+  data_frame(Mixed=coef(gpa_mixed)$student[,2], Separate=gpa_lm_by_group[,2]) %>% 
+  gather(key=Model, value=Occasion) %>% 
+  ggplot(aes(x=Occasion)) +
+  geom_density(aes(color=Model, fill=Model), alpha=.25, show.legend=F) +
+  scale_color_viridis_d(begin = .25, end = .75) +
+  scale_fill_viridis_d(begin = .25, end = .75) +
+  ggtitle('Slopes for occasion') +
+  labs(x='', y='') +
+  xlim(c(-.2,.4)) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
+
+
+library(patchwork)
+gint + gslopes
+```
+
+
+
+
+
+
+
