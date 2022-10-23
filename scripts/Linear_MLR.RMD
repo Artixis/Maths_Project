@@ -33,7 +33,7 @@ lapply(x, library, character.only = TRUE)
 Load in the population data set
 The population data set
 ```{r}
-dataPop = read.csv("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/populationLong.csv")
+dataPop = read.csv("C:/Users/viquy/Documents/GitHub/Maths_Project/scripts/datasets/populationLong.csv")
 ```
 
 ```{r}
@@ -59,6 +59,16 @@ Transform the density variable
 A square root transformation was chosen after running
 a simple linear model with density as the predictor through
 the box-cox function.
+
+```{r}
+bc = boxcox(lm(trans_density~yearsince2000*parradist+yearsince2000*sydist,data=dataPop))
+bc$x[which.max(bc$y)]
+#Suggests sqrt transform
+```
+
+
+
+
 ```{r}
 dataPop$trans_density <- sqrt(dataPop$density)
 ```
@@ -72,7 +82,7 @@ The shape file uses polygons to geometrically decribe Australia by its SA2 regio
 It includes various fields, the one we mainly reference is SA2_NAME16. This is how
 we match the regions in the shape file to the ones in our population data set.
 ```{r}
-syd <- st_read("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/SA2_2016_AUST.shp")
+syd <- st_read("C:/Users/viquy/Documents/GitHub/Maths_Project/scripts/datasets/SA2_2016_AUST.shp")
 greaterSyd <- syd[syd$GCC_NAME16=="Greater Sydney",]
 ```
 
@@ -119,7 +129,7 @@ head(dataPop$sydist)
 ```
 ```{r}
 # Drop SA2's without syddist
-df <- df[!is.na(df$sydist),]
+dataPop <- dataPop[!is.na(dataPop$sydist),]
 ```
 
 Run the head and tail end of the data to make sure this has worked
@@ -421,32 +431,9 @@ i + geom_line(aes(colour=sydist,linetype=parradist))
 Predictive Model Approach
 --------------------------------------------------------------------------------
 
-```{r}
-anova(model_fit,model_fit2)
-```
-
-
 
 ```{r}
-
-model_fit2 = lmer(trans_density ~ logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021 + (yearsince2000|name),data=dataPop)
-
-
-random_coef = coef(model_fit2)$name
-random_coef
-
-#row.names(random_coef)
-```
-
-```{r}
-p <- predict(linear_model,newdata=data.frame(logparradist=c(0,1.609438), logsydist) )
-```
-
-```{r}
-log(5)
-```
-
-```{r}
+# Multiple Linear Regression
 mod = lm(trans_density~logsydist + yearsince2000, data=dataPop)
 plot(mod)
 ```
@@ -468,11 +455,37 @@ qqline(resid(model_fit))
 ```
 
 ```{r}
-print(model_fit, correlation=TRUE)
+
+model_fit2 = lmer(trans_density ~ logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021 + (yearsince2000|name),data=dataPop)
+
+
+random_coef = coef(model_fit2)$name
+random_coef
+
+#row.names(random_coef)
 ```
 
 
 ```{r}
+anova(model_fit,model_fit2)
+# model_fit2, random slope with year 20-21,  is better
+```
+
+
+```{r}
+print(model_fit, correlation=TRUE)
+```
+
+```{r}
+p <- predict(linear_model,newdata=data.frame(logparradist=c(0,1.609438), logsydist))
+```
+
+```{r}
+log(5)
+```
+
+```{r}
+# get all intercepts
 random_eff = ranef(model_fit)$name
 random_eff
 ```
@@ -486,13 +499,14 @@ random_coef
 length(syd$SA2_NAME16)
 length(unique(syd$SA2_NAME16))
 ```
+
 ```{r}
 length(dataPop$name)
+
 length(unique(dataPop$name))
 
 length(unique(dataPop$sydist))
 ```
-
 
 
 

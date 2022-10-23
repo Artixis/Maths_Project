@@ -1,6 +1,8 @@
 ---
 title: "Mixed Models"
-output: pdf_document
+output:
+  word_document: default
+  pdf_document: default
 date: "2022-10-17"
 ---
 
@@ -35,6 +37,15 @@ Mixed-Models:
 A mixture of fixed and random. 
 
 
+Need these packages:
+install.packages("remotes")
+remotes::install_github("easystats/report")
+
+To use the package below
+
+```{r}
+library("report")
+```
 
 ```{r, warning=FALSE}
 x <- c("ggmap", "rgdal", "rgeos", "maptools", "dplyr", "tidyr", "tmap", "sf", "MASS", "rgeos", "gmt", "lme4", "lmerTest", "ggplot2", "sf", "tidyverse", "gganimate")
@@ -55,51 +66,43 @@ dataPop$density <- dataPop$pop/dataPop$area
 dataPop$yearsince2000 <- dataPop$year-2000
 ```
 
+```{r}
+length(unique(dataPop$name))
+```
+
 
 ```{r}
 dataPop$trans_density <- sqrt(dataPop$density)
 ```
 
-**Addition from Linear_MLR so below code would run**
-Load in shape file. Greater Sydney needs to be specified. If not, the shape file
-will not be able to match NSW SA2 regions to the population data set, which now,
-only contains NSW regions.
-
-The shape file uses polygons to geometrically decribe Australia by its SA2 regions.
-It includes various fields, the one we mainly reference is SA2_NAME16. This is how
-we match the regions in the shape file to the ones in our population data set.
 ```{r}
 syd <- st_read("C:/Users/viquy/Documents/GitHub/Maths_Project/scripts/datasets/SA2_2016_AUST.shp")
 greaterSyd <- syd[syd$GCC_NAME16=="Greater Sydney",]
 ```
 
 ```{r}
-head(greaterSyd)
-```
-
-
-```{r}
-centr <- st_centroid(syd)
+centr <- st_centroid(greaterSyd)
 
 centroid_lat <- unlist(lapply(centr$geometry,function(l) l[2]))
 centroid_long <- unlist(lapply(centr$geometry,function(l) l[1]))
 ```
 
 ```{r}
-syd$sydist <- geodist(-33.8688,151.2093,centroid_lat,centroid_long)
-syd$parradist <- geodist(-33.8148,151.0017,centroid_lat,centroid_long)
-dataPop$sydist <- syd$sydist[match(dataPop$name,syd$SA2_NAME16)]
-dataPop$parradist <- syd$parradist[match(dataPop$name,syd$SA2_NAME16)]
+greaterSyd$sydist <- geodist(-33.8688,151.2093,centroid_lat,centroid_long)
+greaterSyd$parradist <- geodist(-33.8148,151.0017,centroid_lat,centroid_long)
+dataPop$sydist <- greaterSyd$sydist[match(dataPop$name,greaterSyd$SA2_NAME16)]
+dataPop$parradist <- greaterSyd$parradist[match(dataPop$name,greaterSyd$SA2_NAME16)]
 
-dataPop$logsydist <- log(syd$sydist[match(dataPop$name,syd$SA2_NAME16)])
-dataPop$logparradist <- log(syd$parradist[match(dataPop$name,syd$SA2_NAME16)])
+dataPop$logsydist <- log(greaterSyd$sydist[match(dataPop$name,greaterSyd$SA2_NAME16)])
+dataPop$logparradist <- log(greaterSyd$parradist[match(dataPop$name,greaterSyd$SA2_NAME16)])
 
-head(dataPop$sydist)
 ```
 
 ```{r}
 # Drop SA2's without syddist
+length(unique(dataPop$logsydist))
 dataPop <- dataPop[!is.na(dataPop$logsydist),]
+length(unique(dataPop$logsydist))
 ```
 
 Mixed-Models:
@@ -107,7 +110,7 @@ A mixture of fixed and random.
 
 Fixed effects model.
 ```{r}
-fit_fixed <- lm(trans_density~yearsince2000*parradist+yearsince2000*sydist,data=dataPop)
+fit_fixed <- lm(trans_density~yearsince2000*logparradist+yearsince2000*logsydist,data=dataPop)
 summary(fit_fixed)
 ```
 
@@ -120,35 +123,32 @@ variables like yearsince2000:parradist and yearsince2000:sydist.
 If so we can say this model performs poorly compared to the multiple linear 
 regression and linear models above.
 
-
-However, we've not used the transformed variables in this model? 
-Try it with the normalized variables.
-
-```{r}
-fit_fixed_norm <- lm(trans_density~yearsince2000*logparradist+yearsince2000*logsydist,data=dataPop)
-summary(fit_fixed_norm)
-```
-
 ^ This performs similarly to the previous models. Accounting for roughly
 59.51% of the variance in the data
 The only concerning thing is that in both models yearsince2000:parradist
 and yearsince2000:sydist are not apparently significant given their p-values. 
 
+
 ```{r}
-rand_model_test <- lmer(trans_density~(1|name),data=dataPop)
-summary(rand_model_test)
-plot(rand_model_test)
-qqnorm(resid(rand_model_test))
-qqline(resid(rand_model_test))
+report(fit_fixed)
 ```
+
 
 Mixed Effect Model, Random Intercepts
 ```{r}
 #| -> General sub scripting operator, selects top-level elements.
 fit_randint <- lmer(trans_density~yearsince2000*logparradist*logsydist+(1|name),data=dataPop)
 summary(fit_randint)
-plot(fit_randint)
+#plot(fit_randint)
 ```
+Summary analysis: 
+
+```{r}
+report(fit_randint)
+```
+
+
+
 
 ```{r}
 ranEff = ranef(fit_randint)$name
@@ -159,12 +159,17 @@ Random Intercept for each SA2  much bigger than residual variation
 this model better than fixed effect.
 
 
-Mixed Effect Model, Random Intercepts and Slopes
+Mixed Effect Model
 ```{r}
 fit_randslope1 <- lmer(trans_density~yearsince2000*parradist*sydist+(yearsince2000|name),data=dataPop)
 summary(fit_randslope1)
-plot(fit_randslope1)
+#plot(fit_randslope1)
 ```
+
+```{r}
+report(fit_randslope1)
+```
+
 
 ```{r}
 ranEff = ranef(fit_randslope1)$name
@@ -188,67 +193,91 @@ dataPop$year2021= (dataPop$yearsince2000 == 21)
 ```
 
 
+```{r}
+head(dataPop,30)
+```
+
+
 Random slope with year= 2020 and year = 2021 as predictors
 ```{r}
-model_fit2 = lmer(trans_density ~ logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021 + (yearsince2000|name),data=dataPop)
+slopes_years = lmer(trans_density ~ logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021 + (yearsince2000|name),data=dataPop)
 
 
-random_coef = coef(model_fit2)$name
+random_coef = coef(slopes_years)$name
 random_coef
 
 #row.names(random_coef)
 ```
 
 
+```{r}
+greaterSyd$coef_slope <- random_coef$`(Intercept)`[match(unique(greaterSyd$SA2_NAME16),row.names(random_coef))]
+
+
+qtm(shp = greaterSyd, fill = c("coef_slope"), fill.palette = "Purples", title = "Coeficient Heat Map (Slopes)")
+```
+
+
+
 ***********prediction fix************
 ```{r}
-p <- predict(linear_model,newdata=data.frame(logparradist=c(0,1.609438), logsydist) )
+MLR_Model = lm(trans_density ~ logsydist + logparradist + yearsince2000, data = dataPop)
+p <- predict(MLR_Model,newdata=data.frame(logparradist=c(1.602, 1.609438), logsydist=c(1.77815, 1.0444), yearsince2000=c(22,22)))
+```
+
+```{r}
+newdata=data.frame(logparradist=c(1.602, 1.609438), logsydist=c(1.77815, 1.0444), yearsince2000=c(22,22))
+newdata
+```
+
+
+```{r}
+p
+```
+```{r}
+61.64780**2 
 ```
 
 
 Random int with year= 2020 and year = 2021 as predictors
 ```{r}
-model_fit = lmer(trans_density ~ logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021 + (1|name),data=dataPop)
+intercepts_years = lmer(trans_density ~ logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021 + (1|name),data=dataPop)
 
-# compare with model_fit2
-# model_fit2 = lmer(trans_density ~ logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021 + (yearsince2000|name),data=dataPop)
-
-qqnorm(resid(model_fit))
-qqline(resid(model_fit))
-#plot(model_fit)
-#summary(model_fit)
+qqnorm(resid(intercepts_years))
+qqline(resid(intercepts_years))
+#plot(intercepts_years)
+#summary(intercepts_years)
 ```
+
 ```{r}
-summary(model_fit)
+print(intercepts_years, correlation=TRUE)
 ```
 
 
 ```{r}
-print(model_fit, correlation=TRUE)
+report(intercepts_years)
+```
+```{r}
+anova(intercepts_years, slopes_years)
 ```
 
 
+
 ```{r}
-random_eff = ranef(model_fit)$name
+random_eff = ranef(intercepts_years)$name
 random_eff
 
-random_coef = coef(model_fit)$name
+random_coef = coef(intercepts_years)$name
 random_coef
 ```
 
 
-
 ```{r}
-length(syd$SA2_NAME16)
-length(unique(syd$SA2_NAME16))
+greaterSyd$coef <- random_coef$`(Intercept)`[match(unique(greaterSyd$SA2_NAME16),row.names(random_coef))]
 
-length(dataPop$name)
-length(unique(dataPop$name))
 
-length(unique(dataPop$sydist))
+qtm(shp = greaterSyd, fill = c("coef"), fill.palette = "Greens", title = "Coeficient Heat Map (Intercepts)")
 ```
-Use the match function to fix this:
-dataPop$parradist <- syd$parradist[match(dataPop$name,syd$SA2_NAME16)]
 
 
 ================================================================================
@@ -263,9 +292,35 @@ random_effects =
   mutate(name = factor(unique(dataPop$name)))
 ```
 
+
 Since this SA2 data is from 2016 I can only really use SA2's with names consistent from 2016.
 Drop missing ones?
 This is an issue with trying to reproduce the next plot as well
+
+
+Maybe try this with a simplier mixed model first
+
+```{r}
+dataPop %>% 
+  ggplot(aes(logsydist, trans_density)) +
+  geom_point(aes(color = 1), alpha = .25) +
+  geom_abline(
+    aes(
+      intercept = fixed_effects['(Intercept)'],
+      slope = fixed_effects['Sydney Dist']),
+    color = 'darkred',
+    size = 2) +
+  geom_abline(
+    aes(
+      intercept = `(Intercept)`, 
+      slope = logsydist,
+      color = 1),
+    size = .5,
+    alpha = .25,
+    data = random_effects) 
+```
+
+
 
 ```{r}
 # This is how I want to plot the random slopes
@@ -281,35 +336,13 @@ dataPop %>%
     size = 2) +
   geom_abline(
     aes(
-      intercept = `(Intercept)`, 
+      intercept = '(Intercept)', 
       slope = logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021,
       color = name),
     size = .5,
     alpha = .25,
-    data = random_eff) 
+    data = dataPop) 
 ```
-
-```{r}
-# Slight alterations to visualise
-# Pretty sure
-ggplot(data = dataPop, mapping = aes(x = logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021, y = trans_density)) +
-  geom_point(aes(color = name), alpha = .25) +
-  geom_abline(
-    aes(
-      intercept = fixed_effects['(Intercept)'],
-      slope = fixed_effects['Name']),
-    color = 'darkred',
-    size = 2) +
-  geom_abline(
-    aes(
-      intercept = `(Intercept)`, 
-      slope = logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021,
-      color = name),
-    size = .5,
-    alpha = .25,
-    data = random_eff) 
-```
-
 
 ================================================================================
 Sample code
@@ -320,6 +353,7 @@ model_lm = lm(trans_density ~ logsydist + yearsince2000)
 ```{r}
 model_lm = lm(trans_density ~ logsydist + yearsince2000, data = dataPop)
 ```
+
 
 ```{r}
 gpa_lm_by_group0 = lmList(trans_density ~ yearsince2000 | name, dataPop)
@@ -368,5 +402,13 @@ gint + gslopes
 ```
 
 
+
+```{r}
+greaterSyd
+```
+
+```{r}
+qtm(shp = greaterSyd, fill = c("parradist"), fill.palette = "Blues")
+```
 
 
