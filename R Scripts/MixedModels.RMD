@@ -81,7 +81,7 @@ head(dataPop$sydist)
 
 ```{r}
 # Drop SA2's without syddist
-df <- df[!is.na(df$sydist),]
+dataPop <- dataPop[!is.na(dataPop$logsydist),]
 ```
 
 Mixed-Models:
@@ -184,6 +184,7 @@ random_coef
 
 ***********prediction fix************
 ```{r}
+# Run this next: needs sydist and 
 p <- predict(linear_model,newdata=data.frame(logparradist=c(0,1.609438), logsydist) )
 ```
 
