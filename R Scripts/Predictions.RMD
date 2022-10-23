@@ -1,0 +1,106 @@
+---
+title: "Predictions"
+output: pdf_document
+---
+
+Load Libraries
+```{r, warning=FALSE}
+x <- c("ggmap", "rgdal", "rgeos", "maptools", "dplyr", "tidyr", "tmap", "sf", "MASS", "rgeos", "gmt", "lme4", "lmerTest", "ggplot2", "sf", "tidyverse", "gganimate")
+lapply(x, library, character.only = TRUE) 
+```
+
+```{r}
+dataPop = read.csv("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/populationLong.csv")
+```
+
+```{r}
+dataPop$density <- 0.0    
+dataPop$density <- dataPop$pop/df$area
+dataPop$yearsince2000 <- dataPop$year-2000
+```
+
+```{r}
+dataPop$trans_density <- sqrt(dataPop$density)
+head(dataPop, 200)
+```
+
+```{r}
+syd <- st_read("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/SA2_2016_AUST.shp")
+greaterSyd <- syd[syd$GCC_NAME16=="Greater Sydney",]
+```
+
+```{r, warning=FALSE}
+centr <- st_centroid(greaterSyd)
+
+centroid_lat <- unlist(lapply(centr$geometry,function(l) l[2]))
+centroid_long <- unlist(lapply(centr$geometry,function(l) l[1]))
+```
+
+```{r}
+greaterSyd$sydist <- geodist(-33.8688,151.2093,centroid_lat,centroid_long)
+greaterSyd$parradist <- geodist(-33.8148,151.0017,centroid_lat,centroid_long)
+dataPop$sydist <- greaterSyd$sydist[match(dataPop$name,greaterSyd$SA2_NAME16)]
+dataPop$parradist <- greaterSyd$parradist[match(dataPop$name,greaterSyd$SA2_NAME16)]
+
+dataPop$logsydist <- log(greaterSyd$sydist[match(dataPop$name,greaterSyd$SA2_NAME16)])
+dataPop$logparradist <- log(greaterSyd$parradist[match(dataPop$name,greaterSyd$SA2_NAME16)])
+```
+
+
+```{r}
+# Drop SA2's without syddist
+dataPop <- dataPop[!is.na(dataPop$logsydist),]
+dataPop <- dataPop[!is.na(dataPop$logparradist),]
+```
+
+
+```{r}
+model_data <-dataPop[!(dataPop$year==2020 | dataPop$year== 2021),]
+head(model_data,20)
+```
+
+```{r}
+pred_data <- dataPop[(dataPop$year==2020 | dataPop$year== 2021),]
+head(pred_data,20)
+```
+
+```{r}
+MLR_Model = lm(trans_density ~ logsydist + logparradist + yearsince2000, data = model_data)
+```
+
+
+
+
+```{r}
+p <- predict(MLR_Model, pred_data)
+```
+
+```{r}
+prediction_data=data.frame(actual_val=pred_data$trans_density, predicted=p, name=pred_data$name)
+prediction_data
+```
+
+```{r}
+# Write this function but append above data frame
+totalSamples = 0
+largePredictions = 0
+for(i in 1:length(p)){
+  if(p[i] > pred_data$trans_density[i]) {
+    largePredictions = largePredictions+1
+  }
+  totalSamples = totalSamples+1
+}
+```
+
+
+```{r}
+totalSamples
+largePredictions
+```
+
+```{r}
+353-144
+```
+So over our MLR actually underestimates the change in population for 209 samples 
+
+
