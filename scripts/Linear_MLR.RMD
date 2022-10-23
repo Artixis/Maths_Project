@@ -60,6 +60,8 @@ A square root transformation was chosen after running
 a simple linear model with density as the predictor through
 the box-cox function.
 
+Through box-cox it looks like a Lambda of 0.4242424 would maximise the likelihood of ... ?
+
 ```{r}
 dataPop$trans_density <- sqrt(dataPop$density)
 ```
@@ -69,6 +71,40 @@ bc = boxcox(lm(trans_density~yearsince2000*parradist+yearsince2000*sydist,data=d
 bc$x[which.max(bc$y)]
 #Suggests sqrt transform
 ```
+Try different transformation:
+```{r}
+dataPop$trans_density_1 <- dataPop$density
+dataPop$trans_density_2 <- (dataPop$density)^2
+dataPop$trans_density_3 <- (dataPop$density)^3
+
+dataPop$trans_density_4 <- (dataPop$density)^-1
+dataPop$trans_density_5 <- (dataPop$density)^-2
+dataPop$trans_density_6 <- (dataPop$density)^-3
+
+dataPop$trans_density_log <- log(dataPop$density) # doesn't work, should skip
+```
+
+```{r}
+bc = boxcox(lm(trans_density_1~yearsince2000*parradist+yearsince2000*sydist,data=dataPop))
+bc$x[which.max(bc$y)]
+
+bc = boxcox(lm(trans_density_2~yearsince2000*parradist+yearsince2000*sydist,data=dataPop))
+bc$x[which.max(bc$y)]
+
+bc = boxcox(lm(trans_density_3~yearsince2000*parradist+yearsince2000*sydist,data=dataPop))
+bc$x[which.max(bc$y)]
+```
+```{r}
+bc = boxcox(lm(trans_density_4~yearsince2000*parradist+yearsince2000*sydist,data=dataPop))
+bc$x[which.max(bc$y)]
+
+bc = boxcox(lm(trans_density_5~yearsince2000*parradist+yearsince2000*sydist,data=dataPop))
+bc$x[which.max(bc$y)]
+
+bc = boxcox(lm(trans_density_6~yearsince2000*parradist+yearsince2000*sydist,data=dataPop))
+bc$x[which.max(bc$y)]
+```
+The highest Lambda would refer to a square root transformation, so this is the method that we will use to normalise our density.
 
 Load in shape file. Greater Sydney needs to be specified. If not, the shape file
 will not be able to match NSW SA2 regions to the population data set, which now,
