@@ -61,18 +61,14 @@ a simple linear model with density as the predictor through
 the box-cox function.
 
 ```{r}
+dataPop$trans_density <- sqrt(dataPop$density)
+```
+
+```{r}
 bc = boxcox(lm(trans_density~yearsince2000*parradist+yearsince2000*sydist,data=dataPop))
 bc$x[which.max(bc$y)]
 #Suggests sqrt transform
 ```
-
-
-
-
-```{r}
-dataPop$trans_density <- sqrt(dataPop$density)
-```
-
 
 Load in shape file. Greater Sydney needs to be specified. If not, the shape file
 will not be able to match NSW SA2 regions to the population data set, which now,
@@ -127,6 +123,7 @@ dataPop$logparradist <- log(syd$parradist[match(dataPop$name,syd$SA2_NAME16)])
 
 head(dataPop$sydist)
 ```
+
 ```{r}
 # Drop SA2's without syddist
 dataPop <- dataPop[!is.na(dataPop$sydist),]
