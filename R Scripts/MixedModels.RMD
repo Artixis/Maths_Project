@@ -5,39 +5,11 @@ output:
   pdf_document: default
 date: "2022-10-17"
 ---
-
-
 --------------------------------------------------------------------------------
 Mixed Effects Models
 --------------------------------------------------------------------------------
-Some definitions: 
-
-Fixed effects:
-Fixed effects are variables that are constant across individuals. Think of ethnicity
-which doesn't change OR age which changes at a constant rate over time. These
-are fixed effects. 
-
-Limitations:
-Variables that are random will be treated as though they are non-random. 
-"For example, in regression analysis, “fixed effects” regression fixes 
-(holds constant) average effects for whatever variable you think might affect the outcome of your analysis."
-
-There is more talk on variables that require dummy variables but this doesn't
-apply to our model.
-
-
-
-Random effects models:
-The variables are random/unpredictable. 
-e.g the cost of a three course dinner would greatly vary depending on location.
-
-
-
-Mixed-Models:
-A mixture of fixed and random. 
-
-
 Need these packages:
+
 install.packages("remotes")
 remotes::install_github("easystats/report")
 
@@ -53,7 +25,7 @@ lapply(x, library, character.only = TRUE)
 ```
 
 ```{r}
-dataPop = read.csv("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/populationLong.csv")
+dataPop = read.csv("C:\\Users\\Laura\\OneDrive - Western Sydney University\\Spring 2022\\Final Project\\populationLong.csv")
 ```
 
 ```{r}
@@ -67,22 +39,16 @@ dataPop$yearsince2000 <- dataPop$year-2000
 ```
 
 ```{r}
-length(unique(dataPop$name))
-```
-
-
-```{r}
 dataPop$trans_density <- sqrt(dataPop$density)
 ```
 
 ```{r}
-syd <- st_read("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/SA2_2016_AUST.shp")
+syd <- st_read("C:\\Users\\Laura\\OneDrive - Western Sydney University\\Spring 2022\\SA2_2016_AUST.shp")
 greaterSyd <- syd[syd$GCC_NAME16=="Greater Sydney",]
 ```
 
 ```{r}
 centr <- st_centroid(greaterSyd)
-
 centroid_lat <- unlist(lapply(centr$geometry,function(l) l[2]))
 centroid_long <- unlist(lapply(centr$geometry,function(l) l[1]))
 ```
@@ -92,10 +58,8 @@ greaterSyd$sydist <- geodist(-33.8688,151.2093,centroid_lat,centroid_long)
 greaterSyd$parradist <- geodist(-33.8148,151.0017,centroid_lat,centroid_long)
 dataPop$sydist <- greaterSyd$sydist[match(dataPop$name,greaterSyd$SA2_NAME16)]
 dataPop$parradist <- greaterSyd$parradist[match(dataPop$name,greaterSyd$SA2_NAME16)]
-
 dataPop$logsydist <- log(greaterSyd$sydist[match(dataPop$name,greaterSyd$SA2_NAME16)])
 dataPop$logparradist <- log(greaterSyd$parradist[match(dataPop$name,greaterSyd$SA2_NAME16)])
-
 ```
 
 ```{r}
@@ -133,13 +97,10 @@ and yearsince2000:sydist are not apparently significant given their p-values.
 report(fit_fixed)
 ```
 
-
 Mixed Effect Model, Random Intercepts
 ```{r}
-#| -> General sub scripting operator, selects top-level elements.
 fit_randint <- lmer(trans_density~yearsince2000*logparradist*logsydist+(1|name),data=dataPop)
 summary(fit_randint)
-#plot(fit_randint)
 ```
 Summary analysis: 
 
@@ -147,12 +108,8 @@ Summary analysis:
 report(fit_randint)
 ```
 
-
-
-
 ```{r}
 ranEff = ranef(fit_randint)$name
-#ranEff
 ```
 
 Random Intercept for each SA2  much bigger than residual variation
@@ -163,7 +120,6 @@ Mixed Effect Model
 ```{r}
 fit_randslope1 <- lmer(trans_density~yearsince2000*parradist*sydist+(yearsince2000|name),data=dataPop)
 summary(fit_randslope1)
-#plot(fit_randslope1)
 ```
 
 ```{r}
@@ -188,7 +144,6 @@ Random slope model significantly better fit.
 
 ```{r}
 dataPop$year2020 = (dataPop$yearsince2000 == 20)
-
 dataPop$year2021= (dataPop$yearsince2000 == 21)
 ```
 
@@ -197,52 +152,64 @@ dataPop$year2021= (dataPop$yearsince2000 == 21)
 head(dataPop,30)
 ```
 
+```{r}
+slopes_years_syd = lmer(trans_density ~ logsydist*yearsince2000 + logsydist*year2020 +  logsydist*year2021 + (yearsince2000|name),data=dataPop)
+summary(slopes_years_syd)
+report(slopes_years_syd)
+```
+
+Create a new df that holds samples to be plotted based on the model.
+Here we have a data point close the Sydney, 2kms, and one far away from Sydney,
+50kms.
+We then choose to 
+
+```{r}
+df = expand.grid(logsydist=c(0.6340370,3.876380), yearsince2000=1.0:21.0)
+df
+```
+
+
+Now use to ifelse statements to establish if the sample if from 2020 or 2021
+```{r}
+df$year2020 = ifelse(df$yearsince2000 == 20, TRUE, FALSE)
+df$year2021 = ifelse(df$yearsince2000 == 21, TRUE, FALSE)
+```
+
+
+```{r}
+df_predict = predict(slopes_years_syd, df, re.form=~0)
+```
+
+```{r}
+plot(df$yearsince2000, df_predict**2)
+```
+
+
+
+
 
 Random slope with year= 2020 and year = 2021 as predictors
 ```{r}
 slopes_years = lmer(trans_density ~ logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021 + (yearsince2000|name),data=dataPop)
-
-
-random_coef = coef(slopes_years)$name
-random_coef
-
+summary(slopes_years)
+#random_coef = coef(slopes_years)$name
+#random_coef
 #row.names(random_coef)
 ```
 
 
 ```{r}
 greaterSyd$coef_slope <- random_coef$`(Intercept)`[match(unique(greaterSyd$SA2_NAME16),row.names(random_coef))]
-
-
 qtm(shp = greaterSyd, fill = c("coef_slope"), fill.palette = "Purples", title = "Coeficient Heat Map (Slopes)")
 ```
 
 
 
-***********prediction fix************
-```{r}
-MLR_Model = lm(trans_density ~ logsydist + logparradist + yearsince2000, data = dataPop)
-p <- predict(MLR_Model,newdata=data.frame(logparradist=c(1.602, 1.609438), logsydist=c(1.77815, 1.0444), yearsince2000=c(22,22)))
-```
-
-```{r}
-newdata=data.frame(logparradist=c(1.602, 1.609438), logsydist=c(1.77815, 1.0444), yearsince2000=c(22,22))
-newdata
-```
-
-
-```{r}
-p
-```
-```{r}
-61.64780**2 
-```
 
 
 Random int with year= 2020 and year = 2021 as predictors
 ```{r}
 intercepts_years = lmer(trans_density ~ logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021 + (1|name),data=dataPop)
-
 qqnorm(resid(intercepts_years))
 qqline(resid(intercepts_years))
 #plot(intercepts_years)
@@ -266,7 +233,6 @@ anova(intercepts_years, slopes_years)
 ```{r}
 random_eff = ranef(intercepts_years)$name
 random_eff
-
 random_coef = coef(intercepts_years)$name
 random_coef
 ```
@@ -274,8 +240,6 @@ random_coef
 
 ```{r}
 greaterSyd$coef <- random_coef$`(Intercept)`[match(unique(greaterSyd$SA2_NAME16),row.names(random_coef))]
-
-
 qtm(shp = greaterSyd, fill = c("coef"), fill.palette = "Greens", title = "Coeficient Heat Map (Intercepts)")
 ```
 
@@ -358,7 +322,6 @@ model_lm = lm(trans_density ~ logsydist + yearsince2000, data = dataPop)
 ```{r}
 gpa_lm_by_group0 = lmList(trans_density ~ yearsince2000 | name, dataPop)
 gpa_lm_by_group  = coef(gpa_lm_by_group0)
-
 gint = 
   data_frame(Mixed=coef(model_fit)$name[,1], Separate=gpa_lm_by_group[,1]) %>% 
   gather(key=Model, value=Intercept) %>% 
@@ -379,7 +342,6 @@ gint =
     legend.box.spacing=unit(0, 'in'),
     legend.position=c(.85,.75)
     )
-
 gslopes = 
   data_frame(Mixed=coef(gpa_mixed)$student[,2], Separate=gpa_lm_by_group[,2]) %>% 
   gather(key=Model, value=Occasion) %>% 
@@ -395,8 +357,6 @@ gslopes =
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank()
   )
-
-
 library(patchwork)
 gint + gslopes
 ```
@@ -410,5 +370,4 @@ greaterSyd
 ```{r}
 qtm(shp = greaterSyd, fill = c("parradist"), fill.palette = "Blues")
 ```
-
 
