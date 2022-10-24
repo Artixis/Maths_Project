@@ -13,25 +13,34 @@ Need these packages:
 install.packages("remotes")
 remotes::install_github("easystats/report")
 
-To use the package below
-
-```{r}
-library("report")
-```
+To use the the "report" library.
 
 ```{r, warning=FALSE}
-x <- c("ggmap", "rgdal", "rgeos", "maptools", "dplyr", "tidyr", "tmap", "sf", "MASS", "rgeos", "gmt", "lme4", "lmerTest", "ggplot2", "sf", "tidyverse", "gganimate")
+x <- c("ggmap", "rgdal", "rgeos", "maptools", "dplyr", "tidyr", "tmap", "sf", "MASS", "rgeos", "gmt", "lme4", "lmerTest", "ggplot2", "sf", "tidyverse", "gganimate", "report")
 lapply(x, library, character.only = TRUE) 
 ```
 
 ```{r}
-dataPop = read.csv("C:\\Users\\Laura\\OneDrive - Western Sydney University\\Spring 2022\\Final Project\\populationLong.csv")
+# Laura's PC
+# dataPop = read.csv("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/populationLong.csv")
+
+# Laura's laptop example below
+# dataPop = read.csv("C:\\Users\\Laura\\OneDrive - Western Sydney University\\Spring 2022\\Final Project\\populationLong.csv")
+
+# My's laptop Example Below
+# dataPop = read.csv("C:/Users/viquy/Documents/GitHub/Maths_Project/scripts/datasets/populationLong.csv")
+
+dataPop = read.csv("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/populationLong.csv")
 ```
 
+
+This is simply to make the data frame easier to read. We're not using these columns so why waste space.
 ```{r}
 dataPop = subset(dataPop, select = -c(numChange,perChange) )
 ```
 
+Create density column and calculate density for each SA2 each year. 
+Create yearsince2000 column.
 ```{r}
 dataPop$density <- 0.0    
 dataPop$density <- dataPop$pop/dataPop$area
@@ -43,7 +52,16 @@ dataPop$trans_density <- sqrt(dataPop$density)
 ```
 
 ```{r}
-syd <- st_read("C:\\Users\\Laura\\OneDrive - Western Sydney University\\Spring 2022\\SA2_2016_AUST.shp")
+# Laura's PC
+# syd <- st_read("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/SA2_2016_AUST.shp")
+
+# Laura's laptop example below
+# syd <- st_read("C:\\Users\\Laura\\OneDrive - Western Sydney University\\Spring 2022\\SA2_2016_AUST.shp")
+
+# My's laptop Example Below
+# syd <- st_read("C:/Users/viquy/Documents/GitHub/Maths_Project/scripts/datasets/SA2_2016_AUST.shp")
+
+syd <- st_read("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/SA2_2016_AUST.shp")
 greaterSyd <- syd[syd$GCC_NAME16=="Greater Sydney",]
 ```
 
@@ -52,6 +70,13 @@ centr <- st_centroid(greaterSyd)
 centroid_lat <- unlist(lapply(centr$geometry,function(l) l[2]))
 centroid_long <- unlist(lapply(centr$geometry,function(l) l[1]))
 ```
+
+================================================================================
+Here is where we define our centroids. 
+Started with Sydney and Parramatta. 
+The distances are calculated for each SA2 and the normalized via a log 
+tansformation.
+================================================================================
 
 ```{r}
 greaterSyd$sydist <- geodist(-33.8688,151.2093,centroid_lat,centroid_long)
@@ -62,12 +87,18 @@ dataPop$logsydist <- log(greaterSyd$sydist[match(dataPop$name,greaterSyd$SA2_NAM
 dataPop$logparradist <- log(greaterSyd$parradist[match(dataPop$name,greaterSyd$SA2_NAME16)])
 ```
 
+
+
 ```{r}
-# Drop SA2's without syddist
-length(unique(dataPop$logsydist))
+# Drop SA2's without syddist (Only 1 sample)
 dataPop <- dataPop[!is.na(dataPop$logsydist),]
 length(unique(dataPop$logsydist))
+length(dataPop$logsydist)
 ```
+
+So all together we have 3588 samples.
+
+================================================================================
 
 Mixed-Models:
 A mixture of fixed and random. 
@@ -76,9 +107,10 @@ Fixed effects model.
 ```{r}
 fit_fixed <- lm(trans_density~yearsince2000*logparradist+yearsince2000*logsydist,data=dataPop)
 summary(fit_fixed)
+#report(fit_fixed)
 ```
 
-
+================================================================================
 Output Summary Interpretation:
 I'm assuming we can interpret this in the same way we approached the linear
 model. The only difference being the ways in which we examine the 
@@ -93,47 +125,59 @@ The only concerning thing is that in both models yearsince2000:parradist
 and yearsince2000:sydist are not apparently significant given their p-values. 
 
 
-```{r}
-report(fit_fixed)
-```
 
+This model doesn't allow us to answer the proposed question so consider 
+rejecting it. The MLR proposed in the previous RMD performs better and would 
+be used instead. 
+================================================================================
+
+
+
+================================================================================
 Mixed Effect Model, Random Intercepts
+
+
+Random intercepts, in our model, are defined when we seperate the data into 
+levels, 1 for each SA2 name. These intercepts all have similar, if not identical 
+slopes, however their intercepts are all unique. 
+================================================================================
+
 ```{r}
 fit_randint <- lmer(trans_density~yearsince2000*logparradist*logsydist+(1|name),data=dataPop)
 summary(fit_randint)
+#report(fit_randint)
 ```
+
+
+================================================================================
 Summary analysis: 
-
-```{r}
-report(fit_randint)
-```
-
-```{r}
-ranEff = ranef(fit_randint)$name
-```
-
-Random Intercept for each SA2  much bigger than residual variation
-this model better than fixed effect.
+Refer to report() for a more detail description of the model. 
+This model faces similar issues to our previous one in that it does not
+specifically answer the question. 
+We need to consider the years 2020 and 2021 to truly see their impact on 
+density.
+================================================================================
 
 
-Mixed Effect Model
+================================================================================
+Mixed Effect Model, Random Slopes
+
+
+Random slopes, in our model, are defined when we separate the data into 
+levels, over yearsince2000 for each SA2 name.
+================================================================================
 ```{r}
 fit_randslope1 <- lmer(trans_density~yearsince2000*parradist*sydist+(yearsince2000|name),data=dataPop)
 summary(fit_randslope1)
-```
-
-```{r}
-report(fit_randslope1)
+# report(fit_randslope1)
 ```
 
 
-```{r}
-ranEff = ranef(fit_randslope1)$name
-ranEff
-```
 
-Intercept random effect is small. 
-
+================================================================================
+Comparing The Models. 
+We can compare the two using an ANOVA. 
+================================================================================
 
 ```{r}
 anova(fit_randint,fit_randslope1)
@@ -142,26 +186,54 @@ anova(fit_randint,fit_randslope1)
 Random slope model significantly better fit.
 
 
+================================================================================
+Let's create logical variables for the years 2020 and 2021. This states, if the
+sample is from 2020, the column, year2020 = TRUE. If not, it's FALSE. 
+year2021 is created in the same way.
+================================================================================
 ```{r}
 dataPop$year2020 = (dataPop$yearsince2000 == 20)
 dataPop$year2021= (dataPop$yearsince2000 == 21)
 ```
 
-
+Check this worked.
 ```{r}
 head(dataPop,30)
 ```
 
+================================================================================
+Random Slopes Model 
+This model only considers Sydney distance. This choice was made after using a 
+similar interaction model that also included Parramatta. 
+================================================================================
 ```{r}
 slopes_years_syd = lmer(trans_density ~ logsydist*yearsince2000 + logsydist*year2020 +  logsydist*year2021 + (yearsince2000|name),data=dataPop)
 summary(slopes_years_syd)
-report(slopes_years_syd)
+#report(slopes_years_syd)
 ```
 
+
+================================================================================
+We see is this model that all the variables are highly significant. 
+Also note the variance is what we'd expect from the data. It's very high 
+when comparing different SA2 regions but the variance within the regions and 
+from year to year is much smaller. 
+
+This is why we choose a mixed model, it accounts from the variences among the
+features.
+================================================================================
+
+
+
+
+
+================================================================================
+Prediction With Random Slopes Model
+
 Create a new df that holds samples to be plotted based on the model.
-Here we have a data point close the Sydney, 2kms, and one far away from Sydney,
-50kms.
-We then choose to 
+Here we have a data point (Surry Hills) close the Sydney, 2kms, and one far 
+away from Sydney (Avoca Beach), 50kms.
+================================================================================
 
 ```{r}
 df = expand.grid(logsydist=c(0.6340370,3.876380), yearsince2000=1.0:21.0)
@@ -186,20 +258,64 @@ plot(df$yearsince2000, df_predict**2)
 
 
 
+================================================================================
+Try the same model as above with Parramatta as our main point of reference. 
+================================================================================
 
+```{r}
+slopes_years_parra = lmer(trans_density ~ logparradist*yearsince2000 + logparradist*year2020 +  logparradist*year2021 + (yearsince2000|name),data=dataPop)
+summary(slopes_years_parra)
+#report(slopes_years_parra)
+```
+
+This model also performs quite well. The main difference is the interaction 
+effect between logparradist and year2020TRUE
+Let's try a similar prediction as done with the last model.
+
+
+```{r}
+# Find specific distance SA2 regions from Parramatta. 
+dataPop[order(dataPop$logparradist, decreasing = FALSE), ]
+```
+
+
+```{r}
+# Sample 1 is North Parramatta, which is 1.993615kms away from the Parramatta centroid. 
+# Sample 2 is Katoomba - Leura, which is 65.16629kms away.
+df_parra = expand.grid(logsydist=c(0.6899496, 0.8246439, 2.3740355, 4.517657, 4.176942), yearsince2000=1.0:21.0)
+
+df_parra$year2020 = ifelse(df_parra$yearsince2000 == 20, TRUE, FALSE)
+df_parra$year2021 = ifelse(df_parra$yearsince2000 == 21, TRUE, FALSE)
+```
+
+```{r}
+df_predict_parra = predict(slopes_years_syd, df_parra, re.form=~0)
+
+plot(df_parra$yearsince2000, df_predict_parra**2)
+```
+
+Frick yeah. 
+This seems to be a consistent pattern. The closer to Parramatta an SA2 is, the 
+more its density drops off in 2020 and 2021.
+
+================================================================================
+OLD MODELS/OLD PLOTS
+Keep for reference, but know that we're not using them. 
+================================================================================
 
 Random slope with year= 2020 and year = 2021 as predictors
 ```{r}
 slopes_years = lmer(trans_density ~ logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021 + (yearsince2000|name),data=dataPop)
-summary(slopes_years)
-#random_coef = coef(slopes_years)$name
+#summary(slopes_years)
+slope_coef = coef(slopes_years)$name
 #random_coef
 #row.names(random_coef)
 ```
 
 
+This is showing the initial intercepts. Need to re do!
 ```{r}
-greaterSyd$coef_slope <- random_coef$`(Intercept)`[match(unique(greaterSyd$SA2_NAME16),row.names(random_coef))]
+greaterSyd$coef_slope <- slope_coef$`(Intercept)`[match(unique(greaterSyd$SA2_NAME16),row.names(slope_coef))]
 qtm(shp = greaterSyd, fill = c("coef_slope"), fill.palette = "Purples", title = "Coeficient Heat Map (Slopes)")
 ```
 
@@ -216,14 +332,7 @@ qqline(resid(intercepts_years))
 #summary(intercepts_years)
 ```
 
-```{r}
-print(intercepts_years, correlation=TRUE)
-```
 
-
-```{r}
-report(intercepts_years)
-```
 ```{r}
 anova(intercepts_years, slopes_years)
 ```
@@ -231,22 +340,24 @@ anova(intercepts_years, slopes_years)
 
 
 ```{r}
-random_eff = ranef(intercepts_years)$name
-random_eff
-random_coef = coef(intercepts_years)$name
-random_coef
+int_eff = ranef(intercepts_years)$name
+int_coef = coef(intercepts_years)$name
 ```
 
 
 ```{r}
-greaterSyd$coef <- random_coef$`(Intercept)`[match(unique(greaterSyd$SA2_NAME16),row.names(random_coef))]
+greaterSyd$coef <- int_coef$`(Intercept)`[match(unique(greaterSyd$SA2_NAME16),row.names(int_coef))]
 qtm(shp = greaterSyd, fill = c("coef"), fill.palette = "Greens", title = "Coeficient Heat Map (Intercepts)")
 ```
 
 
+
+
+================================================================================
+Visualization
+- Plots I'm trying to emulate from github.
 ================================================================================
 
-Visualisation
 
 Need this chunk to work for the next chunk
 ```{r}
@@ -370,4 +481,73 @@ greaterSyd
 ```{r}
 qtm(shp = greaterSyd, fill = c("parradist"), fill.palette = "Blues")
 ```
+
+================================================================================
+Sample code
+
+model_fit = lmer(trans_density ~ logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021 + (1|name),data=dataPop)
+model_lm = lm(trans_density ~ logsydist + yearsince2000)
+
+```{r}
+model_lm = lm(trans_density ~ logsydist + yearsince2000, data = dataPop)
+```
+
+
+```{r}
+gpa_lm_by_group0 = lmList(trans_density ~ yearsince2000 | name, dataPop)
+gpa_lm_by_group  = coef(gpa_lm_by_group0)
+
+gint = 
+  data_frame(Mixed=coef(model_fit)$name[,1], Separate=gpa_lm_by_group[,1]) %>% 
+  gather(key=Model, value=Intercept) %>% 
+  ggplot(aes(x=Intercept)) +
+  geom_density(aes(color=Model, fill=Model), alpha=.25) +
+  scale_color_viridis_d(begin = .25, end = .75) +
+  scale_fill_viridis_d(begin = .25, end = .75) +
+  ggtitle('Intercepts') +
+  labs(x='', y='') +
+  xlim(c(1.5,4)) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    legend.key.size=unit(2, 'mm'),
+    legend.title=element_text(size=8),
+    legend.text=element_text(size=8),
+    legend.box.spacing=unit(0, 'in'),
+    legend.position=c(.85,.75)
+    )
+
+gslopes = 
+  data_frame(Mixed=coef(gpa_mixed)$student[,2], Separate=gpa_lm_by_group[,2]) %>% 
+  gather(key=Model, value=Occasion) %>% 
+  ggplot(aes(x=Occasion)) +
+  geom_density(aes(color=Model, fill=Model), alpha=.25, show.legend=F) +
+  scale_color_viridis_d(begin = .25, end = .75) +
+  scale_fill_viridis_d(begin = .25, end = .75) +
+  ggtitle('Slopes for occasion') +
+  labs(x='', y='') +
+  xlim(c(-.2,.4)) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
+
+
+library(patchwork)
+gint + gslopes
+```
+
+
+
+```{r}
+greaterSyd
+```
+
+```{r}
+qtm(shp = greaterSyd, fill = c("parradist"), fill.palette = "Blues")
+```
+
+
 
