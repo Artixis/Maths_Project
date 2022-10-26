@@ -236,7 +236,12 @@ away from Sydney (Avoca Beach), 50kms.
 ================================================================================
 
 ```{r}
-df = expand.grid(logsydist=c(0.6340370,3.876380), yearsince2000=1.0:21.0)
+# Find specific distance SA2 regions from Sydney 
+dataPop[order(dataPop$logsydist, decreasing = FALSE), ]
+```
+Darlinghurst, Surry Hills, Lidcombe ,Avoca Beach, Wentworth Falls
+```{r}
+df = expand.grid(logsydist=c(0.3208779, 0.6340370,2.7107842,3.876380,4.360940), yearsince2000=1.0:21.0)
 df
 ```
 
@@ -252,14 +257,44 @@ df$year2021 = ifelse(df$yearsince2000 == 21, TRUE, FALSE)
 df_predict = predict(slopes_years_syd, df, re.form=~0)
 ```
 
+
 ```{r}
-plot(df$yearsince2000, df_predict**2)
+df_predict**2
+```
+
+col= ifelse(df_predict**2 >= 1000, "#56B4E9","#CC99FF")
+```{r}
+plot(df$yearsince2000, df_predict**2, col = c("#56B4E9","#4169E1","#D2691E" ,"#CC99FF", "#6A5ACD"), xlab="Years Since 2000", ylab="Density Predictions", pch=16)
+```
+
+
+```{r}
+slope_syd = coef(slopes_years_syd)$name
+#slope_syd
+```
+
+
+```{r}
+greaterSyd$slope_syd <- slope_syd$`(Intercept)`[match(unique(greaterSyd$SA2_NAME16),row.names(slope_syd))]
+qtm(shp = greaterSyd, fill = c("slope_syd"), fill.palette = "Purples", title = "Years Since 2000 Coefficients")
 ```
 
 
 
+
+```{r}
+ints_years_syd = lmer(trans_density ~ logsydist*yearsince2000 + logsydist*year2020 +  logsydist*year2021 + (1|name),data=dataPop)
+summary(ints_years_syd)
+#report(slopes_years_syd)
+```
+
+```{r}
+anova( slopes_years_syd,ints_years_syd)
+```
+
+
 ================================================================================
-Try the same model as above with Parramatta as our main point of reference. 
+Try the same slope model as above with Parramatta as our main point of reference. 
 ================================================================================
 
 ```{r}
@@ -282,14 +317,14 @@ dataPop[order(dataPop$logparradist, decreasing = FALSE), ]
 ```{r}
 # Sample 1 is North Parramatta, which is 1.993615kms away from the Parramatta centroid. 
 # Sample 2 is Katoomba - Leura, which is 65.16629kms away.
-df_parra = expand.grid(logsydist=c(0.6899496, 0.8246439, 2.3740355, 4.517657, 4.176942), yearsince2000=1.0:21.0)
+df_parra = expand.grid(logparradist=c(0.6899496, 0.8246439, 2.3740355, 4.517657, 4.176942), yearsince2000=1.0:21.0)
 
 df_parra$year2020 = ifelse(df_parra$yearsince2000 == 20, TRUE, FALSE)
 df_parra$year2021 = ifelse(df_parra$yearsince2000 == 21, TRUE, FALSE)
 ```
 
 ```{r}
-df_predict_parra = predict(slopes_years_syd, df_parra, re.form=~0)
+df_predict_parra = predict(slopes_years_parra, df_parra, re.form=~0)
 
 plot(df_parra$yearsince2000, df_predict_parra**2)
 ```
@@ -297,6 +332,14 @@ plot(df_parra$yearsince2000, df_predict_parra**2)
 Frick yeah. 
 This seems to be a consistent pattern. The closer to Parramatta an SA2 is, the 
 more its density drops off in 2020 and 2021.
+
+
+```{r}
+
+```
+
+
+
 
 ================================================================================
 OLD MODELS/OLD PLOTS
@@ -319,37 +362,24 @@ greaterSyd$coef_slope <- slope_coef$`(Intercept)`[match(unique(greaterSyd$SA2_NA
 qtm(shp = greaterSyd, fill = c("coef_slope"), fill.palette = "Purples", title = "Coeficient Heat Map (Slopes)")
 ```
 
+================================================================================
+Intercepts - Sydney only model.
 
+================================================================================
 
-
-
-Random int with year= 2020 and year = 2021 as predictors
 ```{r}
-intercepts_years = lmer(trans_density ~ logsydist*logparradist*yearsince2000 + logsydist*logparradist*year2020 +  logsydist*logparradist*year2021 + (1|name),data=dataPop)
-qqnorm(resid(intercepts_years))
-qqline(resid(intercepts_years))
-#plot(intercepts_years)
-#summary(intercepts_years)
+intercepts_years_syd = lmer(trans_density ~ logsydist*yearsince2000 + logsydist*year2020 +  logsydist*year2021 + (1|name),data=dataPop)
+summary(intercepts_years_syd)
 ```
 
 
-```{r}
-anova(intercepts_years, slopes_years)
-```
-
-
+================================================================================
 
 ```{r}
-int_eff = ranef(intercepts_years)$name
-int_coef = coef(intercepts_years)$name
+anova(intercepts_years_syd, slopes_years_syd)
 ```
 
-
-```{r}
-greaterSyd$coef <- int_coef$`(Intercept)`[match(unique(greaterSyd$SA2_NAME16),row.names(int_coef))]
-qtm(shp = greaterSyd, fill = c("coef"), fill.palette = "Greens", title = "Coeficient Heat Map (Intercepts)")
-```
-
+================================================================================
 
 
 
@@ -361,9 +391,9 @@ Visualization
 
 Need this chunk to work for the next chunk
 ```{r}
-fixed_effects = fixef(model_fit)
+fixed_effects = fixef(slopes_years_parra)
 random_effects = 
-  random_coef %>%
+  slope_coef %>%
   mutate(name = factor(unique(dataPop$name)))
 ```
 
@@ -373,7 +403,7 @@ Drop missing ones?
 This is an issue with trying to reproduce the next plot as well
 
 
-Maybe try this with a simplier mixed model first
+Maybe try this with a simpler mixed model first
 
 ```{r}
 dataPop %>% 
@@ -539,15 +569,6 @@ library(patchwork)
 gint + gslopes
 ```
 
-
-
-```{r}
-greaterSyd
-```
-
-```{r}
-qtm(shp = greaterSyd, fill = c("parradist"), fill.palette = "Blues")
-```
 
 
 
