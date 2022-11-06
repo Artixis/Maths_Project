@@ -29,6 +29,48 @@ dataPop$trans_density <- sqrt(dataPop$density)
 syd <- st_read("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/SA2_2016_AUST.shp")
 greaterSyd <- syd[syd$GCC_NAME16=="Greater Sydney",]
 ```
+```{r}
+length(unique(syd$SA2_NAME16))
+```
+
+```{r}
+length(unique(greaterSyd$SA2_NAME16))
+```
+
+
+
+```{r}
+syd <- syd %>% mutate(isGreaterSyde = as.factor(ifelse(GCC_NAME16 == "Greater Sydney", yes = "Greater", no="non-Greater")))
+```
+
+```{r}
+NSW <- syd[syd$GCC_NAME16=="Rest of NSW" | syd$GCC_NAME16=="Greater Sydney",]
+plot(NSW$geometry)
+```
+
+
+```{r}
+unique(syd$GCC_NAME16)
+plot(syd$g)
+```
+
+```{r}
+NSW  <- NSW %>%
+  mutate(color = ifelse(NSW$GCC_NAME16=="Greater Sydney", "#D8BFD8", "#FFC0CB"))
+```
+
+```{r}
+plot(NSW$geometry, col = NSW$color)
+```
+
+
+
+```{r}
+plot(greaterSyd$geometry, col="#FFC0CB")
+```
+
+
+
 
 ```{r}
 centr <- st_centroid(greaterSyd)
@@ -50,6 +92,20 @@ dataPop$logparradist <- log(greaterSyd$parradist[match(dataPop$name,greaterSyd$S
 dataPop$logliverpooldist <- log(greaterSyd$liverpooldist[match(dataPop$name,greaterSyd$SA2_NAME16)])
 ```
 
+
+```{r}
+syd$sydist <- geodist(-33.8688,151.2093,centroid_lat,centroid_long)
+syd$parradist <- geodist(-33.8148,151.0017,centroid_lat,centroid_long)
+syd$liverpooldist <- geodist(-33.9286,150.9180,centroid_lat,centroid_long)
+
+
+dataPop$sydist <- syd$sydist[match(dataPop$name,syd$SA2_NAME16)]
+dataPop$parradist <- syd$parradist[match(dataPop$name,syd$SA2_NAME16)]
+dataPop$liverpooldist <- syd$liverpooldist[match(dataPop$name,syd$SA2_NAME16)]
+dataPop$logsydist <- log(syd$sydist[match(dataPop$name,syd$SA2_NAME16)])
+dataPop$logparradist <- log(syd$parradist[match(dataPop$name,syd$SA2_NAME16)])
+dataPop$logliverpooldist <- log(syd$liverpooldist[match(dataPop$name,syd$SA2_NAME16)])
+```
 
 
 ```{r}
@@ -75,14 +131,12 @@ slopes_years_syd = lmer(trans_density ~ logsydist*yearsince2000 + logsydist*year
 ```
 
 ```{r}
-plot_model(slopes_years_syd, type = "eff", vars = "year", sample.n = 5)
+plot_model(slopes_years_syd, type = "eff", vars = as.factor("year"), sample.n = 5)
 ```
 ```{r}
 install.packages("glmmTMB")
 library("glmmTMB")
 ```
-
-
 
 
 
