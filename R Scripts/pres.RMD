@@ -3,6 +3,14 @@ title: "Presentation Code"
 output: pdf_document
 date: "2022-11-04"
 ---
+```{r}
+install.packages("glmmTMB")
+library("glmmTMB")
+```
+
+```{r}
+install.packages("sjPlot")
+```
 
 
 ```{r, warning=FALSE}
@@ -11,7 +19,7 @@ lapply(x, library, character.only = TRUE)
 ```
 
 ```{r}
-dataPop = read.csv("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/populationLong.csv")
+dataPop = dataPop = read.csv("C:\\Users\\Laura\\OneDrive - Western Sydney University\\Spring 2022\\Final Project\\populationLong.csv")
 ```
 
 
@@ -26,7 +34,7 @@ dataPop$trans_density <- sqrt(dataPop$density)
 ```
 
 ```{r}
-syd <- st_read("C:\\Users/Owner/OneDrive - Western Sydney University/Spring 2022/Mathematics Project/Data Sets (Need to organise)/SA2_2016_AUST.shp")
+syd <- st_read("C:\\Users\\Laura\\OneDrive - Western Sydney University\\Spring 2022\\SA2_2016_AUST.shp")
 greaterSyd <- syd[syd$GCC_NAME16=="Greater Sydney",]
 ```
 ```{r}
@@ -46,12 +54,6 @@ syd <- syd %>% mutate(isGreaterSyde = as.factor(ifelse(GCC_NAME16 == "Greater Sy
 ```{r}
 NSW <- syd[syd$GCC_NAME16=="Rest of NSW" | syd$GCC_NAME16=="Greater Sydney",]
 plot(NSW$geometry)
-```
-
-
-```{r}
-unique(syd$GCC_NAME16)
-plot(syd$g)
 ```
 
 ```{r}
@@ -82,8 +84,6 @@ centroid_long <- unlist(lapply(centr$geometry,function(l) l[1]))
 greaterSyd$sydist <- geodist(-33.8688,151.2093,centroid_lat,centroid_long)
 greaterSyd$parradist <- geodist(-33.8148,151.0017,centroid_lat,centroid_long)
 greaterSyd$liverpooldist <- geodist(-33.9286,150.9180,centroid_lat,centroid_long)
-
-
 dataPop$sydist <- greaterSyd$sydist[match(dataPop$name,greaterSyd$SA2_NAME16)]
 dataPop$parradist <- greaterSyd$parradist[match(dataPop$name,greaterSyd$SA2_NAME16)]
 dataPop$liverpooldist <- greaterSyd$liverpooldist[match(dataPop$name,greaterSyd$SA2_NAME16)]
@@ -94,49 +94,42 @@ dataPop$logliverpooldist <- log(greaterSyd$liverpooldist[match(dataPop$name,grea
 
 
 ```{r}
-syd$sydist <- geodist(-33.8688,151.2093,centroid_lat,centroid_long)
-syd$parradist <- geodist(-33.8148,151.0017,centroid_lat,centroid_long)
-syd$liverpooldist <- geodist(-33.9286,150.9180,centroid_lat,centroid_long)
-
-
-dataPop$sydist <- syd$sydist[match(dataPop$name,syd$SA2_NAME16)]
-dataPop$parradist <- syd$parradist[match(dataPop$name,syd$SA2_NAME16)]
-dataPop$liverpooldist <- syd$liverpooldist[match(dataPop$name,syd$SA2_NAME16)]
-dataPop$logsydist <- log(syd$sydist[match(dataPop$name,syd$SA2_NAME16)])
-dataPop$logparradist <- log(syd$parradist[match(dataPop$name,syd$SA2_NAME16)])
-dataPop$logliverpooldist <- log(syd$liverpooldist[match(dataPop$name,syd$SA2_NAME16)])
-```
-
-
-```{r}
 # Drop SA2's without syddist (Only 1 sample)
 dataPop <- dataPop[!is.na(dataPop$logsydist),]
 ```
 
 
 ```{r}
-dataPop$year2020 = (dataPop$yearsince2000 == 20)
-dataPop$year2021= (dataPop$yearsince2000 == 21)
+dataPop$year2020 = as.factor((dataPop$yearsince2000 == 20))
+dataPop$year2021= as.factor((dataPop$yearsince2000 == 21))
 ```
+
+
 
 ```{r}
 data = dataPop[order(dataPop$logsydist, decreasing = FALSE), ]
-data_5 = head(data, 63)
-data_5
+head(data, 300)
+data_5 = head(data, 104)
 ```
 
 
 ```{r}
-slopes_years_syd = lmer(trans_density ~ logsydist*yearsince2000 + logsydist*year2020 +  logsydist*year2021 + (yearsince2000|name),data=data_5)
+slopes_years_syd = lmer(trans_density ~ logsydist + year2020 +  year2021 + (yearsince2000|name),data=data_5)
 ```
 
 ```{r}
-plot_model(slopes_years_syd, type = "eff", vars = as.factor("year"), sample.n = 5)
+plot_model(slopes_years_syd, type = "est", vars = "year", sample.n = 5)
 ```
+
+
 ```{r}
-install.packages("glmmTMB")
-library("glmmTMB")
+ggeffects::ggpredict(slopes_years_syd, terms = c("yearsince2000","name"), type = "re") %>% plot()
 ```
+
+
+
+
+
 
 
 
